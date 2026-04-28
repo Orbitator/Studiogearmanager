@@ -1,546 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Studio Gear Manager</title>
-  <meta name="description" content="Studio Gear Manager – visuelle Bibliothek für Synthesizer, Effektgeräte, MIDI-Hardware und Studiozubehör." />
-
-  <!-- PWA / "Zum Dock hinzufügen" -->
-  <link rel="manifest" href="./manifest.json" />
-  <meta name="theme-color" content="#67e8f9" />
-  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
-  <link rel="apple-touch-icon" href="./icon.svg" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Gear Manager" />
-  <meta name="application-name" content="Studio Gear Manager" />
-
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2c3e50">
+    <title>Studio Gear Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="hero">
-      <div>
-        <h1 data-i18n="appTitle">Studio Gear Manager</h1>
-        <p data-i18n="subtitle">Visuelle Bibliothek für Synthesizer, Effektgeräte, MIDI-Hardware, Zubehör, Dokumente, Marktwerte und technische Gerätedaten.</p>
-      </div>
-      <div class="hero-actions">
-        <button id="languageToggle" class="btn btn-ghost" type="button">EN</button>
-        <button id="settingsBtn" class="btn btn-ghost icon-action" type="button" title="Setup" aria-label="Setup">⚙</button>
-        <nav class="view-toggle-bar">
-          <button id="viewLibraryBtn" class="view-toggle-btn active" type="button" data-view="library" data-i18n="viewLibrary">Bibliothek</button>
-          <button id="viewWishlistBtn" class="view-toggle-btn" type="button" data-view="wishlist" data-i18n="viewWishlist">Wunschliste</button>
+    <div id="app">
+        <header>
+            <div class="header-left">
+                <h1>🎛️ Studio Gear Manager</h1>
+            </div>
+            <div class="header-right">
+                <button id="donate-button" class="btn-donate" title="Spenden" style="display: flex;">❤️ Spenden</button>
+                <button id="search-toggle-btn" class="btn-icon" title="Suche">🔍</button>
+                <div id="search-container" class="search-container hidden">
+                    <input type="text" id="search-input" placeholder="Volltextsuche..." autocomplete="off">
+                    <button id="search-close-btn" class="btn-icon">✕</button>
+                </div>
+                <button id="view-grid-btn" class="btn-icon active" title="Grid-Ansicht">▦</button>
+                <button id="view-list-btn" class="btn-icon" title="Listenansicht">☰</button>
+                <button id="setup-btn" class="btn-icon" title="Einstellungen">⚙️</button>
+            </div>
+        </header>
+        
+        <nav id="main-nav">
+            <button class="nav-btn active" data-view="library">📦 Bibliothek</button>
+            <button class="nav-btn" data-view="wishlist">⭐ Wunschliste</button>
         </nav>
-        <button id="addDeviceBtn" class="btn btn-primary" type="button"><span>+</span> <span data-i18n="addDevice">Gerät hinzufügen</span></button>
-        <button id="addWishlistBtn" class="btn btn-primary hidden" type="button"><span>+</span> <span data-i18n="addWishlistItem">Wunsch hinzufügen</span></button>
-        <button id="exportBtn" class="btn btn-ghost" type="button" data-i18n="backupNow">Backup exportieren</button>
-        <!-- <button id="exportCsvBtn" class="btn btn-ghost" type="button" data-i18n="exportCsv">Export CSV</button> -->
-      </div>
-    </header>
-
-    <section id="galleryView">
-      <div class="stats-grid">
-        <article class="stat-card">
-          <div class="stat-icon">▦</div>
-          <div>
-            <strong id="statDevices">0</strong>
-            <span data-i18n="statDevices">Geräte</span>
-          </div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon" data-currency-icon>€</div>
-          <div>
-            <strong id="statValue">0 €</strong>
-            <span data-i18n="statValue">Gesamtwert</span>
-          </div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon">▤</div>
-          <div>
-            <strong id="statDocs">0</strong>
-            <span data-i18n="statDocs">Dokumente</span>
-          </div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon">!</div>
-          <div>
-            <strong id="statIssues">0</strong>
-            <span data-i18n="statIssues">Mängel</span>
-          </div>
-        </article>
-      </div>
-
-      <div class="toolbar card compact-toolbar">
-        <div class="search-wrap">
-          <span>⌕</span>
-          <input id="searchInput" type="search" placeholder="Gerät, Hersteller, MIDI-Kanal, Standort, Notiz oder Dokument suchen …" />
-        </div>
-        <div class="sort-panel">
-          <span data-i18n="sortLabel">Sortieren</span>
-          <div class="sort-controls">
-            <select id="sortFieldSelect">
-              <option value="added" data-i18n="sortFieldAdded">Hinzugefügt</option>
-              <option value="name" data-i18n="sortFieldName">Alphabetisch</option>
-              <option value="manufacturer" data-i18n="sortFieldManufacturer">Hersteller</option>
-              <option value="midiChannel" data-i18n="sortFieldMidiChannel">MIDI-Kanal</option>
-              <option value="rating" data-i18n="sortFieldRating">Rating</option>
-              <option value="price" data-i18n="sortFieldPrice">Preis</option>
-              <option value="year" data-i18n="sortFieldYear">Anschaffungsjahr</option>
+        
+        <div id="filter-bar">
+            <select id="sort-select">
+                <option value="name-asc">Name A-Z</option>
+                <option value="name-desc">Name Z-A</option>
+                <option value="manufacturer-asc">Hersteller A-Z</option>
+                <option value="manufacturer-desc">Hersteller Z-A</option>
+                <option value="value-desc">Wert höchster</option>
+                <option value="value-asc">Wert niedrigster</option>
+                <option value="date-added-desc">Neueste zuerst</option>
             </select>
-            <button id="sortAscBtn" class="sort-dir-btn" type="button" aria-label="Aufsteigend">↑</button>
-            <button id="sortDescBtn" class="sort-dir-btn active" type="button" aria-label="Absteigend">↓</button>
-          </div>
-        </div>
-        <div class="filter-combo">
-          <div id="categoryFilters" class="filter-row"></div>
-          <label id="subcategoryFilterWrap" class="subcategory-filter">
-            <span data-i18n="subcategoryFilterLabel">Subkategorie</span>
-            <select id="subcategoryFilterSelect">
-              <option value="" data-i18n="allSubcategories">Alle Subkategorien</option>
+            <select id="category-filter">
+                <option value="all">Alle Kategorien</option>
             </select>
-          </label>
+            <button id="add-gear-btn" class="btn-primary">+ Neues Gerät</button>
+            <button id="export-btn" class="btn-secondary">📥 Backup exportieren</button>
+            <button id="import-btn" class="btn-secondary">📤 Backup importieren</button>
+            <input type="file" id="import-file-input" accept=".json" style="display:none;">
+            <button id="csv-export-btn" class="btn-secondary">📊 CSV exportieren</button>
         </div>
-      </div>
-<div id="deviceGrid" class="device-grid"></div>
-      <div id="emptyState" class="empty-state card hidden" data-i18n="emptyState">Keine Geräte gefunden.</div>
-    </section>
-
-    <section id="detailView" class="hidden">
-      <div class="detail-topbar">
-        <button id="backBtn" class="btn btn-ghost" type="button"><span class="btn-icon">←</span> <span data-i18n="backToGallery">Zur Galerie</span></button>
-        <div class="detail-nav-arrows">
-          <button id="prevDeviceBtn" class="btn btn-ghost detail-nav-btn" type="button" data-i18n-title="prevDevice" title="Vorheriges Gerät" aria-label="Vorheriges Gerät">←</button>
-          <button id="nextDeviceBtn" class="btn btn-ghost detail-nav-btn" type="button" data-i18n-title="nextDevice" title="Nächstes Gerät" aria-label="Nächstes Gerät">→</button>
-        </div>
-        <span data-i18n="devicePassport">Gerätepass / Datenmaske</span>
-      </div>
-
-      <article class="detail-card card">
-        <aside class="detail-image-column">
-          <div class="image-stage">
-            <img id="detailImage" alt="" />
-            <div id="imageFallback" class="image-fallback hidden">▧<br><span data-i18n="noImage">Kein Bild verfügbar</span></div>
-          </div>
-          <div class="detail-actions-grid">
-            <button id="imageSearchBtn" class="btn btn-ghost" type="button"><span class="btn-icon">▧</span> <span data-i18n="searchImage">Bild suchen</span></button>
-            <label class="btn btn-ghost file-label">
-              <span>⇧</span> <span data-i18n="ownImage">Eigenes Bild</span>
-              <input id="imageUploadInput" type="file" accept="image/*" />
-            </label>
-          </div>
-          <div class="field-stack">
-            <div class="info-field"><span data-i18n="location">Standort</span><strong id="detailLocation"></strong></div>
-            <div class="info-field"><span data-i18n="status">Status</span><strong id="detailStatus"></strong></div>
-            <div class="info-field"><span data-i18n="condition">Zustand</span><strong id="detailCondition"></strong></div>
-          </div>
-        </aside>
-
-        <main class="detail-content">
-          <div class="detail-head">
-            <div>
-              <div id="detailManufacturerLogo" class="detail-manufacturer-logo"></div>
-              <div id="detailManufacturer" class="detail-kicker"></div>
-              <h2 id="detailName"></h2>
-              <p id="detailCategory"></p>
-              <div id="detailRating" class="detail-rating-wrap"></div>
+        
+        <main id="content">
+            <div id="library-view" class="view active">
+                <div id="gear-grid" class="gear-grid"></div>
+                <div id="gear-list" class="gear-list hidden">
+                    <table class="gear-table">
+                        <thead>
+                            <tr>
+                                <th data-col="photo">Foto</th>
+                                <th data-col="name">Name</th>
+                                <th data-col="manufacturer">Hersteller</th>
+                                <th data-col="category">Kategorie</th>
+                                <th data-col="value">Wert</th>
+                                <th data-col="power">Strom</th>
+                                <th data-col="actions">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gear-table-body"></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="market-badge">
-              <span data-i18n="currentMarketValue">Aktueller Marktwert</span>
-              <strong id="detailMarketRange"></strong>
-              <small id="detailMarketMeta"></small>
+            <div id="wishlist-view" class="view">
+                <div class="wishlist-header">
+                    <button id="add-wish-btn" class="btn-primary">+ Wunsch hinzufügen</button>
+                </div>
+                <div id="wishlist-grid" class="gear-grid"></div>
             </div>
-          </div>
-
-          <nav id="tabs" class="tabs"></nav>
-          <div id="tabContent" class="tab-content"></div>
-
-          <div class="edit-actions">
-            <button id="editDeviceBtn" class="btn btn-primary" type="button" data-i18n="editDevice">Gerät bearbeiten</button>
-            <button id="printDeviceBtn" class="btn btn-ghost" type="button" data-i18n="printDevice">Gerätepass drucken</button>
-            <button id="removeImageBtn" class="btn btn-ghost" type="button" data-i18n="removeImage">Bild entfernen</button>
-            <button id="deleteDeviceBtn" class="btn btn-danger" type="button" data-i18n="deleteDevice">Gerät löschen</button>
-          </div>
         </main>
-      </article>
-    </section>
-
-    <section id="wishlistView" class="hidden">
-      <div class="wishlist-intro card">
-        <h2 data-i18n="wishlistTitle">Wunschliste</h2>
-        <p data-i18n="wishlistIntro">Geräte, die du gern kaufen möchtest. Erfasse Hersteller, Modell, Preise und Angebotslinks. Ein Klick übernimmt das Gerät beim Kauf in deine Bibliothek.</p>
-      </div>
-
-      <div class="stats-grid">
-        <article class="stat-card">
-          <div class="stat-icon">★</div>
-          <div>
-            <strong id="wishlistStatCount">0</strong>
-            <span data-i18n="wishlistStatCount">Wünsche</span>
-          </div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon" data-currency-icon>€</div>
-          <div>
-            <strong id="wishlistStatBudget">0 €</strong>
-            <span data-i18n="wishlistStatBudget">Gesamtbudget (gebraucht)</span>
-          </div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon" data-currency-icon>€</div>
-          <div>
-            <strong id="wishlistStatBudgetNew">0 €</strong>
-            <span data-i18n="wishlistStatBudgetNew">Gesamtbudget (neu)</span>
-          </div>
-        </article>
-        <article class="stat-card">
-          <div class="stat-icon">↗</div>
-          <div>
-            <strong id="wishlistStatLinks">0</strong>
-            <span data-i18n="wishlistStatLinks">Links</span>
-          </div>
-        </article>
-      </div>
-
-      <div class="toolbar card compact-toolbar">
-        <div class="search-wrap">
-          <span>⌕</span>
-          <input id="wishlistSearchInput" type="search" placeholder="Wunsch suchen …" />
-        </div>
-        <div class="sort-panel">
-          <span data-i18n="sortLabel">Sortieren</span>
-          <div class="sort-controls">
-            <select id="wishlistSortFieldSelect">
-              <option value="added" data-i18n="sortFieldAdded">Hinzugefügt</option>
-              <option value="manufacturer" data-i18n="sortFieldManufacturer">Hersteller</option>
-              <option value="model" data-i18n="sortFieldModel">Modell</option>
-              <option value="priceNew" data-i18n="sortFieldPriceNew">Neupreis</option>
-              <option value="priceUsed" data-i18n="sortFieldPriceUsed">Gebrauchtpreis</option>
-            </select>
-            <button id="wishlistSortAscBtn" class="sort-dir-btn" type="button" aria-label="Aufsteigend">↑</button>
-            <button id="wishlistSortDescBtn" class="sort-dir-btn active" type="button" aria-label="Absteigend">↓</button>
-          </div>
-        </div>
-        <div class="filter-combo">
-          <div id="wishlistCategoryFilters" class="filter-row"></div>
-          <label id="wishlistSubcategoryFilterWrap" class="subcategory-filter">
-            <span data-i18n="subcategoryFilterLabel">Subkategorie</span>
-            <select id="wishlistSubcategoryFilterSelect">
-              <option value="" data-i18n="allSubcategories">Alle Subkategorien</option>
-            </select>
-          </label>
-        </div>
-      </div>
-
-      <div id="wishlistGrid" class="device-grid wishlist-grid"></div>
-      <div id="wishlistEmptyState" class="empty-state card hidden" data-i18n="wishlistEmpty">Noch keine Wünsche erfasst.</div>
-    </section>
-  </div>
-
-  <div id="nagToast" class="nag-toast hidden" role="dialog" aria-live="polite">
-    <button class="nag-close" id="nagCloseBtn" type="button" aria-label="Schließen">×</button>
-    <div class="nag-emoji" aria-hidden="true">☕</div>
-    <h4 class="nag-title" data-i18n="nagTitle">Hilft dir die App?</h4>
-    <p class="nag-text" data-i18n="nagText">Wenn ja, freu ich mich riesig über einen kleinen Beitrag.</p>
-    <div class="nag-actions">
-      <button id="nagDonateBtn" class="btn btn-primary" type="button" data-i18n="nagDonate">Ein Latte Macciato ausgeben? ;-)</button>
-      <button id="nagLaterBtn" class="btn btn-ghost" type="button" data-i18n="nagLater">Vielleicht später</button>
     </div>
-  </div>
-
-  <dialog id="wishlistDialog" class="dialog compact-device-dialog">
-    <form id="wishlistForm" method="dialog">
-      <div class="dialog-header">
-        <h3 id="wishlistDialogTitle" data-i18n="wishlistDialogTitleAdd">Wunsch hinzufügen</h3>
-        <button class="icon-btn" id="closeWishlistDialogBtn" type="button">×</button>
-      </div>
-
-      <div class="device-form-scroll">
-        <div class="form-section-grid">
-          <div class="form-section-title" data-i18n="sectionGeneral">Allgemein</div>
-          <label><span data-i18n="manufacturer">Hersteller</span><input name="manufacturer" list="manufacturerSuggestions" /></label>
-          <label><span data-i18n="model">Modell</span><input name="model" list="modelSuggestions" /></label>
-          <label><span data-i18n="type">Gerätetyp</span><input name="type" list="typeSuggestions" /></label>
-          <label><span data-i18n="subcategory">Subkategorie</span><input name="subcategory" list="subcategorySuggestions" /></label>
-          <label class="manufacturer-logo-field"><span data-i18n="manufacturerLogo">Hersteller Logo</span><input id="wishlistLogoInput" type="file" accept="image/*" /></label>
-          <label><span data-i18n="imageUrl">Bild-URL</span><input name="image" /></label>
-          <label class="manufacturer-logo-field"><span data-i18n="ownImage">Eigenes Bild</span><input id="wishlistImageInput" type="file" accept="image/*" /></label>
+    
+    <!-- Setup Dialog -->
+    <div id="setup-dialog" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Einstellungen</h2>
+            <div class="setup-section">
+                <h3>Sprache / Language</h3>
+                <select id="language-select">
+                    <option value="de">Deutsch</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="setup-section">
+                <h3>Theme</h3>
+                <select id="theme-select">
+                    <option value="dark">Dunkel</option>
+                    <option value="light">Hell</option>
+                </select>
+            </div>
+            <div class="setup-section">
+                <h3>Akzentfarbe</h3>
+                <input type="color" id="accent-color-input" value="#3498db">
+            </div>
+            <div class="setup-section">
+                <h3>Ansichts-Optionen</h3>
+                <label><input type="checkbox" id="show-photos-check" checked> Fotos anzeigen</label>
+                <label><input type="checkbox" id="show-values-check" checked> Werte anzeigen</label>
+            </div>
+            <div class="setup-section">
+                <h3>Beschriftungen anpassen</h3>
+                <label>Kategorie 1: <input type="text" id="label-cat1" placeholder="z.B. Mikrofone"></label>
+                <label>Kategorie 2: <input type="text" id="label-cat2" placeholder="z.B. Preamps"></label>
+                <label>Kategorie 3: <input type="text" id="label-cat3" placeholder="z.B. Monitore"></label>
+                <label>Kategorie 4: <input type="text" id="label-cat4" placeholder="z.B. Outboard"></label>
+                <label>Kategorie 5: <input type="text" id="label-cat5" placeholder="z.B. Kabel/Zubehör"></label>
+            </div>
+            <div class="setup-section">
+                <h3>Spenden-Button</h3>
+                <label>
+                    <input type="checkbox" id="show-donation-btn" checked> 
+                    Spenden-Button in der Kopfzeile anzeigen
+                </label>
+            </div>
+            <div class="setup-section">
+                <h3>Daten</h3>
+                <button id="load-demo-btn" class="btn-secondary">Demo-Daten laden</button>
+                <button id="reset-btn" class="btn-danger">Alle Daten löschen</button>
+                <button id="export-logs-btn" class="btn-secondary">📋 Logs exportieren</button>
+            </div>
+            <button id="close-setup-btn" class="btn-primary">Schließen</button>
         </div>
-
-        <div class="wishlist-image-tools">
-          <button id="wishlistImageSearchBtn" class="btn btn-ghost" type="button"><span class="btn-icon">▧</span> <span data-i18n="searchImage">Bild suchen</span></button>
-        </div>
-
-        <div class="form-section-grid wishlist-pricing-grid">
-
-          <div class="form-section-title" data-i18n="sectionWishlistPricing">Preise & Links</div>
-          <label><span data-i18n="priceNew">Neupreis</span><input name="priceNew" type="number" step="1" /></label>
-          <label><span data-i18n="priceUsed">Gebrauchtpreis</span><input name="priceUsed" type="number" step="1" /></label>
-        </div>
-
-        <label class="full-label">
-          <span data-i18n="wishlistLinks">Links (eine URL pro Zeile)</span>
-          <textarea name="links" rows="4" placeholder="https://reverb.com/..."></textarea>
-        </label>
-
-        <div id="wishlistPreviewBox" class="wishlist-preview-box"></div>
-      </div>
-
-      <div class="dialog-actions">
-        <button type="button" id="cancelWishlistDialogBtn" class="btn btn-ghost" data-i18n="cancel">Abbrechen</button>
-        <button type="submit" class="btn btn-primary" data-i18n="save">Speichern</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="deviceDialog" class="dialog compact-device-dialog">
-    <form id="deviceForm" method="dialog">
-      <div class="dialog-header">
-        <h3 id="dialogTitle" data-i18n="dialogTitleAdd">Gerät hinzufügen</h3>
-        <button class="icon-btn" id="closeDialogBtn" type="button">×</button>
-      </div>
-
-      <div class="device-form-scroll">
-      <div class="form-section-grid">
-        <div class="form-section-title" data-i18n="sectionGeneral">Allgemein</div>
-        <label><span data-i18n="name">Name</span><input name="name" list="nameSuggestions" required /></label>
-        <label><span data-i18n="manufacturer">Hersteller</span><input name="manufacturer" list="manufacturerSuggestions" /></label>
-        <label class="manufacturer-logo-field"><span data-i18n="manufacturerLogo">Hersteller Logo</span><input id="manufacturerLogoInput" name="manufacturerLogoFile" type="file" accept="image/*" /></label>
-        <label><span data-i18n="model">Modell</span><input name="model" list="modelSuggestions" /></label>
-        <label><span data-i18n="serialNumber">Seriennummer</span><input name="serialNumber" list="serialNumberSuggestions" /></label>
-        <label><span data-i18n="firmwareVersion">Firmware Version</span><input name="firmwareVersion" list="firmwareVersionSuggestions" /></label>
-        <label><span data-i18n="type">Gerätetyp</span><input name="type" list="typeSuggestions" /></label>
-        <label><span data-i18n="subcategory">Subkategorie</span><input name="subcategory" list="subcategorySuggestions" /></label>
-        <label><span data-i18n="status">Status</span><input name="status" list="statusSuggestions" /></label>
-        <label><span data-i18n="condition">Zustand</span><input name="condition" list="conditionSuggestions" /></label>
-        <label><span data-i18n="location">Standort</span><input name="location" list="locationSuggestions" /></label>
-        <label><span data-i18n="imageUrl">Bild-URL</span><input name="image" list="imageSuggestions" /></label>
-        <div class="form-section-title" data-i18n="sectionPurchase">Anschaffung & Wert</div>
-        <label><span data-i18n="purchaseYear">Kaufjahr</span><input name="purchaseYear" list="purchaseYearSuggestions" type="number" min="1900" max="2100" /></label>
-        <label><span data-i18n="purchasePrice">Anschaffungspreis</span><input name="purchasePrice" list="purchasePriceSuggestions" type="number" step="1" /></label>
-        <label><span data-i18n="warrantyUntil">Garantie bis</span><input name="warrantyUntil" list="warrantyUntilSuggestions" type="date" /></label>
-        <label><span data-i18n="marketMin">Marktwert min.</span><input name="marketMin" list="marketMinSuggestions" type="number" step="1" /></label>
-        <label><span data-i18n="marketMax">Marktwert max.</span><input name="marketMax" list="marketMaxSuggestions" type="number" step="1" /></label>
-        <label><span data-i18n="marketMedian">Marktwert Median</span><input name="marketMedian" list="marketMedianSuggestions" type="number" step="1" /></label>
-        <label><span data-i18n="lastChecked">Letzte Prüfung</span><input name="lastChecked" list="lastCheckedSuggestions" /></label>
-        <div class="form-section-title" data-i18n="sectionAudioMidi">Audio & MIDI</div>
-        <label><span data-i18n="audioOutputs">Audio-Ausgänge</span><input name="audioOutputs" list="audioOutputsSuggestions" /></label>
-        <label><span data-i18n="audioInputs">Audio-Eingänge</span><input name="audioInputs" list="audioInputsSuggestions" /></label>
-        <label><span data-i18n="connector">Anschlussart</span><input name="connector" list="connectorSuggestions" /></label>
-        <label><span data-i18n="level">Pegel</span><input name="level" list="levelSuggestions" /></label>
-        <label><span data-i18n="midiIn">MIDI In</span><input name="midiIn" list="midiInSuggestions" /></label>
-        <label><span data-i18n="midiOut">MIDI Out</span><input name="midiOut" list="midiOutSuggestions" /></label>
-        <label><span data-i18n="midiThru">MIDI Thru</span><input name="midiThru" list="midiThruSuggestions" /></label>
-        <label><span data-i18n="usbMidi">USB-MIDI</span><input name="usbMidi" list="usbMidiSuggestions" /></label>
-        <label><span data-i18n="midiChannel">MIDI-Kanal</span><input name="midiChannel" list="midiChannelSuggestions" /></label>
-        <label><span data-i18n="programChange">Program Change</span><input name="pc" list="pcSuggestions" /></label>
-        <label>MSB<input name="msb" list="msbSuggestions" /></label>
-        <label>LSB<input name="lsb" list="lsbSuggestions" /></label>
-        <div class="form-section-title" data-i18n="sectionPowerDocs">Strom & Dokumente</div>
-        <label><span data-i18n="powerData">Stromdaten</span><input name="powerSummary" list="powerSummarySuggestions" /></label>
-        <label><span data-i18n="psu">Netzteil</span><input name="psu" list="psuSuggestions" /></label>
-        <label><span data-i18n="powerConnector">Stromanschluss</span><input name="powerConnector" list="powerConnectorSuggestions" /></label>
-        <label><span data-i18n="voltage">Spannung</span><input name="voltage" list="voltageSuggestions" /></label>
-      </div>
-
-      <label class="full-label">
-        <span data-i18n="notes">Notizen</span>
-        <textarea name="notes" rows="3"></textarea>
-      </label>
-
-      
-      <div class="document-attach-box">
-        <div class="document-attach-head">
-          <strong data-i18n="documents">Dokumente</strong>
-          <span data-i18n="documentsAttachmentHint">Dokumente lokal als Anhang hinzufügen.</span>
-        </div>
-        <div class="document-add-row">
-          <label>
-            <span data-i18n="documentName">Dokumentname</span>
-            <input id="documentNameInput" type="text" placeholder="z. B. Bedienungsanleitung" />
-          </label>
-          <label>
-            <span data-i18n="documentFile">Datei auswählen</span>
-            <input id="documentFileInput" type="file" />
-          </label>
-          <button id="addDocumentBtn" class="btn btn-ghost" type="button" data-i18n="addDocument">Dokument hinzufügen</button>
-        </div>
-        <div id="documentAttachmentList" class="document-attachment-list"></div>
-      </div>
-
-
-      </div>
-
-      <div class="dialog-actions">
-        <button type="button" id="cancelDialogBtn" class="btn btn-ghost" data-i18n="cancel">Abbrechen</button>
-        <button type="submit" class="btn btn-primary" data-i18n="save">Speichern</button>
-      </div>
-    </form>
-  </dialog>
-
-
-
-  
-  <dialog id="settingsDialog" class="dialog settings-dialog">
-    <form id="settingsForm" method="dialog">
-      <div class="dialog-header">
-        <h3 data-i18n="settingsTitle">Setup</h3>
-        <button class="icon-btn" id="closeSettingsBtn" type="button">×</button>
-      </div>
-      <p class="settings-intro" data-i18n="settingsIntro">Hier kannst du die wichtigsten Einstellungen der Oberfläche anpassen. Die Einstellungen werden lokal im Browser gespeichert.</p>
-
-      <div class="settings-tabs" role="tablist">
-        <button class="settings-tab active" type="button" data-settings-tab="colors" data-i18n="settingsTabColors">Farben</button>
-        <button class="settings-tab" type="button" data-settings-tab="views" data-i18n="settingsTabViews">Ansichten definieren</button>
-        <button class="settings-tab" type="button" data-settings-tab="labels" data-i18n="settingsTabLabels">Beschriftungen</button>
-        <button class="settings-tab" type="button" data-settings-tab="logs" data-i18n="settingsTabLogs">Logs</button>
-      </div>
-
-      <div class="settings-content">
-        <section class="settings-panel active" data-settings-panel="colors">
-          <div class="settings-grid">
-            <div class="settings-section-title" data-i18n="settingsSectionSurface">Oberfläche</div>
-            <label><span data-i18n="colorBackgroundA">Hintergrund 1</span><input name="bg0" type="color" /></label>
-            <label><span data-i18n="colorBackgroundB">Hintergrund 2</span><input name="bg1" type="color" /></label>
-            <label><span data-i18n="colorPanel">Karten dunkel</span><input name="panelColor" type="color" /></label>
-            <label><span data-i18n="colorText">Schrift hell</span><input name="textColor" type="color" /></label>
-            <label><span data-i18n="colorMuted">Sekundärschrift</span><input name="mutedColor" type="color" /></label>
-            <label><span data-i18n="colorAccent">Akzentfarbe</span><input name="accentColor" type="color" /></label>
-            <label><span data-i18n="colorCardBg">Gerätekarten</span><input name="cardBg" type="color" /></label>
-            <label><span data-i18n="colorCardText">Gerätekarten-Schrift</span><input name="cardText" type="color" /></label>
-            <label><span data-i18n="colorDetailBg">Detail-Hintergrund</span><input name="detailBg" type="color" /></label>
-            <label><span data-i18n="colorStar">Sterne</span><input name="starColor" type="color" /></label>
-
-            <div class="settings-section-title" data-i18n="settingsSectionButtons">Buttons einzeln</div>
-
-            <div class="button-color-card"><span data-i18n="btnThemeLanguage">Sprache</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnLanguageBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnLanguageText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeSetup">Setup</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnSettingsBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnSettingsText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeAdd">Gerät hinzufügen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnAddBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnAddText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeBackup">Backup exportieren</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnBackupBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnBackupText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeCsv">Export CSV</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnCsvBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnCsvText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeImport">Import JSON</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnImportBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnImportText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeSortUp">Sortierung ↑</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnSortAscBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnSortAscText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeSortDown">Sortierung ↓</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnSortDescBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnSortDescText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeEdit">Gerät bearbeiten</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnEditBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnEditText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemePrint">Gerätepass drucken</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnPrintBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnPrintText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeRemoveImage">Bild entfernen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnRemoveImageBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnRemoveImageText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeDelete">Gerät löschen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnDeleteBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnDeleteText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeDialogCancel">Dialog Abbrechen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnDialogCancelBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnDialogCancelText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeDialogSave">Dialog Speichern</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnDialogSaveBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnDialogSaveText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeResetColors">Farben zurücksetzen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnResetThemeBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnResetThemeText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeSettingsCancel">Setup Abbrechen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnSettingsCancelBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnSettingsCancelText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeSettingsSave">Setup Speichern</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnSettingsSaveBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnSettingsSaveText" type="color" /></label></div></div>
-
-            <div class="settings-section-title" data-i18n="settingsSectionWishlist">Buttons Wunschliste</div>
-
-            <div class="button-color-card"><span data-i18n="btnThemeViewToggle">View-Toggle (inaktiv)</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnViewToggleBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnViewToggleText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeViewToggleActive">View-Toggle (aktiv)</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnViewToggleActiveBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnViewToggleActiveText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeAddWishlist">Wunsch hinzufügen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnAddWishlistBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnAddWishlistText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeMoveToLibrary">In Bibliothek übernehmen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnMoveToLibraryBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnMoveToLibraryText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeEditWishlist">Wunsch bearbeiten</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnEditWishlistBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnEditWishlistText" type="color" /></label></div></div>
-            <div class="button-color-card"><span data-i18n="btnThemeDeleteWishlist">Wunsch löschen</span><div class="dual-color"><label><small data-i18n="colorBgShort">BG</small><input name="btnDeleteWishlistBg" type="color" /></label><label><small data-i18n="colorTextShort">Text</small><input name="btnDeleteWishlistText" type="color" /></label></div></div>
-          </div>
-        </section>
-
-        <section class="settings-panel" data-settings-panel="views">
-          <div class="view-settings-layout">
-            <section class="view-settings-card">
-              <h4 data-i18n="gridViewFields">Grid-Ansicht</h4>
-              <p data-i18n="gridViewFieldsHelp">Wähle die Felder, die auf den Gerätekarten angezeigt werden sollen.</p>
-              <div id="gridFieldSettings" class="field-toggle-list"></div>
-            </section>
-            <section class="view-settings-card">
-              <h4 data-i18n="listViewFields">Listenansicht</h4>
-              <p data-i18n="listViewFieldsHelp">Wähle die Spalten, die in der Listenansicht angezeigt werden sollen.</p>
-              <div id="listFieldSettings" class="field-toggle-list"></div>
-            </section>
-          </div>
-        </section>
-
-        <section class="settings-panel" data-settings-panel="labels">
-          <div class="labels-toolbar">
-            <p data-i18n="labelsHelp">Beschriftungen, Datenfeld-Labels und Button-Texte können hier individuell überschrieben werden. Leeres Feld = Standardtext der gewählten Sprache.</p>
-            <button id="resetUserLabelsBtn" class="btn btn-ghost" type="button" data-i18n="resetUserLabels">Alle Beschriftungen zurücksetzen</button>
-          </div>
-          <div id="labelsEditor" class="labels-editor"></div>
-        </section>
-
-        <section class="settings-panel" data-settings-panel="logs">
-          <div class="logs-toolbar">
-            <button id="exportLogsBtn" class="btn btn-ghost" type="button" data-i18n="exportLogs">Logs als JSON exportieren</button>
-            <button id="clearLogsBtn" class="btn btn-ghost" type="button" data-i18n="clearLogs">Logs löschen</button>
-            <span id="logsCount" class="logs-count"></span>
-          </div>
-          <div class="logs-toolbar">
-            <button id="testNagBtn" class="btn btn-ghost" type="button" data-i18n="testNag">Spendenhinweis jetzt testen</button>
-            <button id="resetNagBtn" class="btn btn-ghost" type="button" data-i18n="resetNag">Spendenhinweis-Sperre zurücksetzen</button>
-          </div>
-          <div id="logsList" class="logs-list"></div>
-        </section>
-      </div>
-
-      <div class="dialog-actions">
-        <button type="button" id="resetThemeBtn" class="btn btn-ghost" data-i18n="resetColors">Farben zurücksetzen</button>
-        <button type="button" id="resetViewSettingsBtn" class="btn btn-ghost" data-i18n="resetViewSettings">Ansichten zurücksetzen</button>
-        <button type="button" id="cancelSettingsBtn" class="btn btn-ghost" data-i18n="cancel">Abbrechen</button>
-        <button type="submit" class="btn btn-primary" data-i18n="save">Speichern</button>
-      </div>
-    </form>
-  </dialog>
-
-
-  <dialog id="startupDialog" class="dialog startup-dialog">
-    <div class="startup-content">
-      <div class="eyebrow" data-i18n="localEdition">Local Browser Edition</div>
-      <h3 data-i18n="startupTitle">Willkommen im Studio Gear Manager</h3>
-      <p data-i18n="startupText">Diese App läuft lokal in deinem Browser. Deine Daten werden nicht auf einen Server übertragen, sondern im Browser gespeichert. Exportiere regelmäßig ein Backup als JSON.</p>
-      <div class="startup-actions">
-        <button id="startDemoBtn" class="btn btn-primary" type="button" data-i18n="startDemo">Demo-Daten laden</button>
-        <button id="startEmptyBtn" class="btn btn-ghost" type="button" data-i18n="startEmpty">Leere Bibliothek starten</button>
-        <label class="btn btn-ghost file-label">
-          <span data-i18n="importBackup">Backup importieren</span>
-          <input id="startupImportInput" type="file" accept="application/json,.json" />
-        </label>
-      </div>
     </div>
-  </dialog>
-
-  <datalist id="nameSuggestions"></datalist>
-  <datalist id="manufacturerSuggestions"></datalist>
-  <datalist id="modelSuggestions"></datalist>
-  <datalist id="serialNumberSuggestions"></datalist>
-  <datalist id="firmwareVersionSuggestions"></datalist>
-  <datalist id="typeSuggestions"></datalist>
-  <datalist id="subcategorySuggestions"></datalist>
-  <datalist id="statusSuggestions"></datalist>
-  <datalist id="conditionSuggestions"></datalist>
-  <datalist id="locationSuggestions"></datalist>
-  <datalist id="imageSuggestions"></datalist>
-  <datalist id="purchaseYearSuggestions"></datalist>
-  <datalist id="purchasePriceSuggestions"></datalist>
-  <datalist id="warrantyUntilSuggestions"></datalist>
-  <datalist id="marketMinSuggestions"></datalist>
-  <datalist id="marketMaxSuggestions"></datalist>
-  <datalist id="marketMedianSuggestions"></datalist>
-  <datalist id="lastCheckedSuggestions"></datalist>
-  <datalist id="audioOutputsSuggestions"></datalist>
-  <datalist id="audioInputsSuggestions"></datalist>
-  <datalist id="connectorSuggestions"></datalist>
-  <datalist id="levelSuggestions"></datalist>
-  <datalist id="midiInSuggestions"></datalist>
-  <datalist id="midiOutSuggestions"></datalist>
-  <datalist id="midiThruSuggestions"></datalist>
-  <datalist id="usbMidiSuggestions"></datalist>
-  <datalist id="midiChannelSuggestions"></datalist>
-  <datalist id="pcSuggestions"></datalist>
-  <datalist id="msbSuggestions"></datalist>
-  <datalist id="lsbSuggestions"></datalist>
-  <datalist id="powerSummarySuggestions"></datalist>
-  <datalist id="psuSuggestions"></datalist>
-  <datalist id="powerConnectorSuggestions"></datalist>
-  <datalist id="voltageSuggestions"></datalist>
-
-  <script src="app.js"></script>
+    
+    <!-- Detail Dialog -->
+    <div id="detail-dialog" class="modal" style="display:none;">
+        <div class="modal-content detail-content">
+            <button id="close-detail-btn" class="btn-close">✕</button>
+            <div id="detail-tabs" class="tabs">
+                <button class="tab-btn active" data-tab="overview">Übersicht</button>
+                <button class="tab-btn" data-tab="audio">Audio</button>
+                <button class="tab-btn" data-tab="midi">MIDI</button>
+                <button class="tab-btn" data-tab="power">Strom</button>
+                <button class="tab-btn" data-tab="value">Wert</button>
+                <button class="tab-btn" data-tab="documents">Dokumente</button>
+                <button class="tab-btn" data-tab="notes">Notizen</button>
+            </div>
+            <div id="detail-content-area"></div>
+        </div>
+    </div>
+    
+    <!-- Dokument Dialog -->
+    <div id="doc-dialog" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Dokument hinzufügen</h3>
+            <div class="form-group">
+                <label>Name: <input type="text" id="doc-name-input" placeholder="z.B. Bedienungsanleitung"></label>
+            </div>
+            <div class="form-group">
+                <label>Typ:</label>
+                <select id="doc-type-select">
+                    <option value="file">Datei-Upload (PDF, Bild, etc.)</option>
+                    <option value="url">Externe URL / Link</option>
+                </select>
+            </div>
+            <div id="doc-file-upload-area" class="form-group">
+                <input type="file" id="doc-file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
+            </div>
+            <div id="doc-url-input-area" class="form-group" style="display:none;">
+                <input type="text" id="doc-url-input" placeholder="https://..." style="width:100%;">
+            </div>
+            <div class="form-actions">
+                <button id="add-doc-confirm-btn" class="btn-primary">Hinzufügen</button>
+                <button id="close-doc-btn" class="btn-secondary">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wish Dialog -->
+    <div id="wish-dialog" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Wunsch hinzufügen</h3>
+            <div class="form-group">
+                <label>Name: <input type="text" id="wish-name-input"></label>
+            </div>
+            <div class="form-group">
+                <label>Hersteller: <input type="text" id="wish-manufacturer-input"></label>
+            </div>
+            <div class="form-group">
+                <label>Preis (€): <input type="number" id="wish-price-input" step="0.01"></label>
+            </div>
+            <div class="form-group">
+                <label>Link: <input type="text" id="wish-link-input"></label>
+            </div>
+            <div class="form-actions">
+                <button id="add-wish-confirm-btn" class="btn-primary">Hinzufügen</button>
+                <button id="close-wish-btn" class="btn-secondary">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Foto-Vergrößerung -->
+    <div id="photo-modal" class="modal" style="display:none;">
+        <span id="photo-modal-close" class="btn-close">✕</span>
+        <img id="photo-modal-img" src="" alt="Vergrößertes Foto">
+    </div>
+    
+    <script src="app.js"></script>
 </body>
 </html>
