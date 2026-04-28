@@ -3,30 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#2c3e50">
     <title>Studio Gear Manager</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
 </head>
 <body>
     <div id="app">
         <header>
-            <div class="header-left">
-                <h1>🎛️ Studio Gear Manager</h1>
+            <h1>🎛️ Studio Gear Manager</h1>
+            <div class="header-actions">
+                <button id="donate-button" class="btn-donate">❤️ Spenden</button>
+                <button id="search-toggle" class="btn-icon" title="Suche">🔍</button>
+                <button id="view-grid" class="btn-icon active" title="Grid-Ansicht">▦</button>
+                <button id="view-list" class="btn-icon" title="Listenansicht">☰</button>
+                <button id="setup-button" class="btn-icon" title="Einstellungen">⚙️</button>
             </div>
-            <div class="header-right">
-                <button id="donate-button" class="btn-donate" title="Spenden" style="display: flex;">❤️ Spenden</button>
-                <button id="search-toggle-btn" class="btn-icon" title="Suche">🔍</button>
-                <div id="search-container" class="search-container hidden">
-                    <input type="text" id="search-input" placeholder="Volltextsuche..." autocomplete="off">
-                    <button id="search-close-btn" class="btn-icon">✕</button>
-                </div>
-                <button id="view-grid-btn" class="btn-icon active" title="Grid-Ansicht">▦</button>
-                <button id="view-list-btn" class="btn-icon" title="Listenansicht">☰</button>
-                <button id="setup-btn" class="btn-icon" title="Einstellungen">⚙️</button>
+            <div id="search-bar" class="search-bar hidden">
+                <input type="text" id="search-input" placeholder="Volltextsuche...">
+                <button id="search-close" class="btn-icon">✕</button>
             </div>
         </header>
         
@@ -35,7 +30,7 @@
             <button class="nav-btn" data-view="wishlist">⭐ Wunschliste</button>
         </nav>
         
-        <div id="filter-bar">
+        <div id="controls">
             <select id="sort-select">
                 <option value="name-asc">Name A-Z</option>
                 <option value="name-desc">Name Z-A</option>
@@ -43,103 +38,107 @@
                 <option value="manufacturer-desc">Hersteller Z-A</option>
                 <option value="value-desc">Wert höchster</option>
                 <option value="value-asc">Wert niedrigster</option>
-                <option value="date-added-desc">Neueste zuerst</option>
+                <option value="date-desc">Neueste zuerst</option>
             </select>
             <select id="category-filter">
                 <option value="all">Alle Kategorien</option>
             </select>
-            <button id="add-gear-btn" class="btn-primary">+ Neues Gerät</button>
-            <button id="export-btn" class="btn-secondary">📥 Backup exportieren</button>
-            <button id="import-btn" class="btn-secondary">📤 Backup importieren</button>
-            <input type="file" id="import-file-input" accept=".json" style="display:none;">
-            <button id="csv-export-btn" class="btn-secondary">📊 CSV exportieren</button>
+            <button id="add-gear" class="btn-primary">+ Neues Gerät</button>
+            <button id="export-backup" class="btn-secondary">📥 Backup exportieren</button>
+            <button id="import-backup" class="btn-secondary">📤 Backup importieren</button>
+            <input type="file" id="import-file" accept=".json" style="display:none;">
+            <button id="export-csv" class="btn-secondary">📊 CSV exportieren</button>
         </div>
         
         <main id="content">
             <div id="library-view" class="view active">
                 <div id="gear-grid" class="gear-grid"></div>
-                <div id="gear-list" class="gear-list hidden">
-                    <table class="gear-table">
-                        <thead>
-                            <tr>
-                                <th data-col="photo">Foto</th>
-                                <th data-col="name">Name</th>
-                                <th data-col="manufacturer">Hersteller</th>
-                                <th data-col="category">Kategorie</th>
-                                <th data-col="value">Wert</th>
-                                <th data-col="power">Strom</th>
-                                <th data-col="actions">Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gear-table-body"></tbody>
-                    </table>
-                </div>
+                <table id="gear-table" class="gear-table hidden">
+                    <thead>
+                        <tr>
+                            <th data-col="photo">Foto</th>
+                            <th data-col="name">Name</th>
+                            <th data-col="manufacturer">Hersteller</th>
+                            <th data-col="category">Kategorie</th>
+                            <th data-col="value">Wert</th>
+                            <th data-col="power">Strom</th>
+                            <th data-col="actions">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gear-table-body"></tbody>
+                </table>
             </div>
             <div id="wishlist-view" class="view">
-                <div class="wishlist-header">
-                    <button id="add-wish-btn" class="btn-primary">+ Wunsch hinzufügen</button>
-                </div>
+                <button id="add-wish" class="btn-primary">+ Wunsch hinzufügen</button>
                 <div id="wishlist-grid" class="gear-grid"></div>
             </div>
         </main>
     </div>
     
-    <!-- Setup Dialog -->
-    <div id="setup-dialog" class="modal" style="display:none;">
+    <!-- Setup Modal -->
+    <div id="setup-modal" class="modal" style="display:none;">
         <div class="modal-content">
             <h2>Einstellungen</h2>
-            <div class="setup-section">
-                <h3>Sprache / Language</h3>
-                <select id="language-select">
+            <div class="setting">
+                <label>Sprache</label>
+                <select id="setting-language">
                     <option value="de">Deutsch</option>
                     <option value="en">English</option>
                 </select>
             </div>
-            <div class="setup-section">
-                <h3>Theme</h3>
-                <select id="theme-select">
+            <div class="setting">
+                <label>Theme</label>
+                <select id="setting-theme">
                     <option value="dark">Dunkel</option>
                     <option value="light">Hell</option>
                 </select>
             </div>
-            <div class="setup-section">
-                <h3>Akzentfarbe</h3>
-                <input type="color" id="accent-color-input" value="#3498db">
+            <div class="setting">
+                <label>Akzentfarbe</label>
+                <input type="color" id="setting-accent" value="#3498db">
             </div>
-            <div class="setup-section">
-                <h3>Ansichts-Optionen</h3>
-                <label><input type="checkbox" id="show-photos-check" checked> Fotos anzeigen</label>
-                <label><input type="checkbox" id="show-values-check" checked> Werte anzeigen</label>
+            <div class="setting">
+                <label><input type="checkbox" id="setting-photos" checked> Fotos anzeigen</label>
             </div>
-            <div class="setup-section">
-                <h3>Beschriftungen anpassen</h3>
-                <label>Kategorie 1: <input type="text" id="label-cat1" placeholder="z.B. Mikrofone"></label>
-                <label>Kategorie 2: <input type="text" id="label-cat2" placeholder="z.B. Preamps"></label>
-                <label>Kategorie 3: <input type="text" id="label-cat3" placeholder="z.B. Monitore"></label>
-                <label>Kategorie 4: <input type="text" id="label-cat4" placeholder="z.B. Outboard"></label>
-                <label>Kategorie 5: <input type="text" id="label-cat5" placeholder="z.B. Kabel/Zubehör"></label>
+            <div class="setting">
+                <label><input type="checkbox" id="setting-values" checked> Werte anzeigen</label>
             </div>
-            <div class="setup-section">
-                <h3>Spenden-Button</h3>
-                <label>
-                    <input type="checkbox" id="show-donation-btn" checked> 
-                    Spenden-Button in der Kopfzeile anzeigen
-                </label>
+            <div class="setting">
+                <label><input type="checkbox" id="setting-donation" checked> Spenden-Button anzeigen</label>
             </div>
-            <div class="setup-section">
-                <h3>Daten</h3>
-                <button id="load-demo-btn" class="btn-secondary">Demo-Daten laden</button>
-                <button id="reset-btn" class="btn-danger">Alle Daten löschen</button>
-                <button id="export-logs-btn" class="btn-secondary">📋 Logs exportieren</button>
+            <div class="setting">
+                <label>Kategorie 1</label>
+                <input type="text" id="setting-cat1" placeholder="z.B. Mikrofone">
             </div>
-            <button id="close-setup-btn" class="btn-primary">Schließen</button>
+            <div class="setting">
+                <label>Kategorie 2</label>
+                <input type="text" id="setting-cat2" placeholder="z.B. Preamps">
+            </div>
+            <div class="setting">
+                <label>Kategorie 3</label>
+                <input type="text" id="setting-cat3" placeholder="z.B. Monitore">
+            </div>
+            <div class="setting">
+                <label>Kategorie 4</label>
+                <input type="text" id="setting-cat4" placeholder="z.B. Outboard">
+            </div>
+            <div class="setting">
+                <label>Kategorie 5</label>
+                <input type="text" id="setting-cat5" placeholder="z.B. Kabel/Zubehör">
+            </div>
+            <div class="modal-actions">
+                <button id="load-demo" class="btn-secondary">Demo-Daten laden</button>
+                <button id="reset-data" class="btn-danger">Alle Daten löschen</button>
+                <button id="export-logs" class="btn-secondary">📋 Logs exportieren</button>
+                <button id="close-setup" class="btn-primary">Schließen</button>
+            </div>
         </div>
     </div>
     
-    <!-- Detail Dialog -->
-    <div id="detail-dialog" class="modal" style="display:none;">
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="modal" style="display:none;">
         <div class="modal-content detail-content">
-            <button id="close-detail-btn" class="btn-close">✕</button>
+            <span id="close-detail" class="close-btn">✕</span>
             <div id="detail-tabs" class="tabs">
                 <button class="tab-btn active" data-tab="overview">Übersicht</button>
                 <button class="tab-btn" data-tab="audio">Audio</button>
@@ -149,64 +148,69 @@
                 <button class="tab-btn" data-tab="documents">Dokumente</button>
                 <button class="tab-btn" data-tab="notes">Notizen</button>
             </div>
-            <div id="detail-content-area"></div>
+            <div id="detail-content"></div>
         </div>
     </div>
     
-    <!-- Dokument Dialog -->
-    <div id="doc-dialog" class="modal" style="display:none;">
+    <!-- Document Modal -->
+    <div id="doc-modal" class="modal" style="display:none;">
         <div class="modal-content">
             <h3>Dokument hinzufügen</h3>
             <div class="form-group">
-                <label>Name: <input type="text" id="doc-name-input" placeholder="z.B. Bedienungsanleitung"></label>
+                <label>Name</label>
+                <input type="text" id="doc-name" placeholder="z.B. Bedienungsanleitung">
             </div>
             <div class="form-group">
-                <label>Typ:</label>
-                <select id="doc-type-select">
-                    <option value="file">Datei-Upload (PDF, Bild, etc.)</option>
-                    <option value="url">Externe URL / Link</option>
+                <label>Typ</label>
+                <select id="doc-type">
+                    <option value="file">Datei-Upload</option>
+                    <option value="url">URL / Link</option>
                 </select>
             </div>
-            <div id="doc-file-upload-area" class="form-group">
-                <input type="file" id="doc-file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
+            <div id="doc-file-area" class="form-group">
+                <input type="file" id="doc-file" accept=".pdf,.png,.jpg,.jpeg,.webp">
             </div>
-            <div id="doc-url-input-area" class="form-group" style="display:none;">
-                <input type="text" id="doc-url-input" placeholder="https://..." style="width:100%;">
+            <div id="doc-url-area" class="form-group" style="display:none;">
+                <input type="text" id="doc-url" placeholder="https://...">
             </div>
-            <div class="form-actions">
-                <button id="add-doc-confirm-btn" class="btn-primary">Hinzufügen</button>
-                <button id="close-doc-btn" class="btn-secondary">Abbrechen</button>
+            <div class="modal-actions">
+                <button id="doc-save" class="btn-primary">Hinzufügen</button>
+                <button id="doc-cancel" class="btn-secondary">Abbrechen</button>
             </div>
         </div>
     </div>
     
-    <!-- Wish Dialog -->
-    <div id="wish-dialog" class="modal" style="display:none;">
+    <!-- Wish Modal -->
+    <div id="wish-modal" class="modal" style="display:none;">
         <div class="modal-content">
             <h3>Wunsch hinzufügen</h3>
             <div class="form-group">
-                <label>Name: <input type="text" id="wish-name-input"></label>
+                <label>Name</label>
+                <input type="text" id="wish-name">
             </div>
             <div class="form-group">
-                <label>Hersteller: <input type="text" id="wish-manufacturer-input"></label>
+                <label>Hersteller</label>
+                <input type="text" id="wish-manufacturer">
             </div>
             <div class="form-group">
-                <label>Preis (€): <input type="number" id="wish-price-input" step="0.01"></label>
+                <label>Preis (€)</label>
+                <input type="number" id="wish-price" step="0.01">
             </div>
             <div class="form-group">
-                <label>Link: <input type="text" id="wish-link-input"></label>
+                <label>Link</label>
+                <input type="text" id="wish-link">
             </div>
-            <div class="form-actions">
-                <button id="add-wish-confirm-btn" class="btn-primary">Hinzufügen</button>
-                <button id="close-wish-btn" class="btn-secondary">Abbrechen</button>
+            <div class="modal-actions">
+                <button id="wish-save" class="btn-primary">Hinzufügen</button>
+                <button id="wish-cancel" class="btn-secondary">Abbrechen</button>
             </div>
         </div>
     </div>
     
-    <!-- Foto-Vergrößerung -->
+    <!-- Photo Modal -->
     <div id="photo-modal" class="modal" style="display:none;">
-        <span id="photo-modal-close" class="btn-close">✕</span>
-        <img id="photo-modal-img" src="" alt="Vergrößertes Foto">
+        <span id="photo-close" class="close-btn">✕</span>
+        <img id="photo-img" src="" alt="Foto">
     </div>
     
     <script src="app.js"></script>
