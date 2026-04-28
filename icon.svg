@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#020617"/>
+  <!-- 3 Drehregler oben -->
+  <g stroke="#67e8f9" stroke-width="14" stroke-linecap="round" fill="none">
+    <circle cx="140" cy="200" r="56"/>
+    <line x1="140" y1="160" x2="140" y2="184"/>
+    <circle cx="256" cy="200" r="56"/>
+    <line x1="231" y1="175" x2="248" y2="192"/>
+    <circle cx="372" cy="200" r="56"/>
+    <line x1="397" y1="175" x2="380" y2="192"/>
+  </g>
+  <!-- Klaviertasten unten -->
+  <g>
+    <rect x="80" y="300" width="80" height="140" rx="8" fill="#f8fafc"/>
+    <rect x="172" y="300" width="80" height="140" rx="8" fill="#f8fafc"/>
+    <rect x="264" y="300" width="80" height="140" rx="8" fill="#f8fafc"/>
+    <rect x="356" y="300" width="80" height="140" rx="8" fill="#f8fafc"/>
+  </g>
+  <g fill="#020617">
+    <rect x="135" y="300" width="40" height="88" rx="6"/>
+    <rect x="227" y="300" width="40" height="88" rx="6"/>
+    <rect x="319" y="300" width="40" height="88" rx="6"/>
+  </g>
+</svg>

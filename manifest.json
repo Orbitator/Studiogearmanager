@@ -1,0 +1,20 @@
+{
+  "name": "Studio Gear Manager",
+  "short_name": "Gear Manager",
+  "description": "Visuelle lokale Bibliothek für Studio-Equipment, Wishlist und Marktwerte.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#67e8f9",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}
