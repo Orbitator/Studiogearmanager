@@ -1,0 +1,10 @@
+# Serverdaten – niemals ins Repo
+orders/
+licdata/
+visitor_ids*.txt
+*.log
+# Lokale Test-Ausgaben
+tests/shots/
+__pycache__/
+node_modules/
+.DS_Store

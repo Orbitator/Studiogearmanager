@@ -1,0 +1,377 @@
+<title>Spenden-Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: Werkbank — links Einstellungen, rechts klebende Vorschau im App-Fenster, darunter der fertige Code */
+  :root {
+    --bg: #f3f6f9;
+    --surface: #ffffff;
+    --fg: #0e1726;
+    --muted: #5b6778;
+    --line: #d9e1ea;
+    --accent: #0e7490;
+    --accent-soft: #e3f4f8;
+    --code-bg: #0f1725;
+    --code-fg: #d6e2f0;
+    --ok: #15803d;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a1019; --surface: #111a27; --fg: #e3e9f2; --muted: #8e9bae; --line: #223044;
+      --accent: #22d3ee; --accent-soft: #0f2a33; --code-bg: #070c14; --code-fg: #cfdced; --ok: #4ade80;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a1019; --surface: #111a27; --fg: #e3e9f2; --muted: #8e9bae; --line: #223044;
+    --accent: #22d3ee; --accent-soft: #0f2a33; --code-bg: #070c14; --code-fg: #cfdced; --ok: #4ade80;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 64px; }
+
+  header { display: grid; gap: 6px; margin-bottom: 28px; max-width: 70ch; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--muted); }
+
+  .bench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 28px; align-items: start; }
+  @media (max-width: 900px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+
+  /* Einstellungen */
+  .settings { display: grid; gap: 22px; min-width: 0; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 12px; min-width: 0; }
+  legend { font-family: var(--font-display); font-weight: 600; font-size: 18px; padding: 0; margin-bottom: 10px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 520px) { .row, .row3 { grid-template-columns: 1fr; } }
+  label { display: grid; gap: 5px; font-size: 13px; font-weight: 500; color: var(--muted); min-width: 0; }
+  label > span small { font-weight: 400; }
+  input[type="text"], input[type="url"], input[type="number"], select, textarea {
+    width: 100%; min-width: 0; font: inherit; font-size: 15px; color: var(--fg); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .color-field { display: flex; gap: 8px; align-items: center; }
+  .color-field input[type="color"] { width: 44px; height: 40px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); flex-shrink: 0; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .seg button { font: inherit; font-size: 13px; font-weight: 600; border: 0; background: transparent; color: var(--muted); padding: 8px 12px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+  /* Vorschau */
+  .stage { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); display: grid; gap: 12px; min-width: 0; }
+  .appwin { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); box-shadow: 0 10px 40px rgba(14, 23, 38, .08); }
+  .appwin-bar { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .appwin-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); display: inline-block; }
+  .appwin-bar span { margin-left: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #mock { position: relative; height: 380px; overflow: hidden;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 46px,
+      var(--bg);
+  }
+  #mock.mock-dark { background: linear-gradient(#1c2638 1px, transparent 1px) 0 0 / 100% 46px, #0b1220; }
+  .mock-rows { position: absolute; inset: 18px 18px auto 18px; display: grid; gap: 10px; }
+  .mock-rows div { height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--muted) 14%, transparent); }
+  .mock-rows div:nth-child(2) { width: 70%; } .mock-rows div:nth-child(3) { width: 85%; } .mock-rows div:nth-child(4) { width: 55%; }
+  .stage-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn { font: inherit; font-size: 14px; font-weight: 600; border-radius: 10px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-main { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+  .btn-main:hover { color: var(--surface); filter: brightness(1.08); }
+  .stage .hint { min-height: 1.5em; }
+
+  /* Code */
+  .code-section { margin-top: 40px; display: grid; gap: 14px; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 24px; margin: 0; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--line); }
+  .tabs button { font: inherit; font-size: 14px; font-weight: 600; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 9px 12px; color: var(--muted); cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .code-box { position: relative; min-width: 0; }
+  pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 12px; padding: 18px 18px 18px; overflow: auto; max-height: 460px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; tab-size: 2; }
+  .copy { position: absolute; top: 10px; right: 10px; font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; border-radius: 8px; border: 1px solid #2b3a52; background: #16223a; color: #cfdced; cursor: pointer; }
+  .copy.done { border-color: #2f7d4f; color: #86efac; }
+  .steps { display: grid; gap: 8px; margin: 0; padding-left: 20px; color: var(--muted); max-width: 75ch; }
+  .steps b { color: var(--fg); font-weight: 600; }
+  code.inline { font-family: var(--font-mono); font-size: 13px; background: var(--accent-soft); color: var(--fg); padding: 1px 5px; border-radius: 5px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Aus dem Studio Gear Manager · v1.0</div>
+    <h1>Spenden-Widget</h1>
+    <p>Der freundliche Kaffee-Hinweis als eigenständiges Script für jede Website oder Web-App. Einstellen, ansehen, Code kopieren, fertig.</p>
+  </header>
+
+  <div class="bench">
+    <form class="settings" id="settings" autocomplete="off">
+      <fieldset>
+        <legend>Spenden-Link</legend>
+        <label><span>Adresse (PayPal, Ko-fi, Buy Me a Coffee …)</span>
+          <input type="url" id="f-url" name="url" value="https://www.paypal.com/donate/?hosted_button_id=EBGB8X7Y7AVKE" spellcheck="false">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Texte</legend>
+        <div class="row">
+          <label><span>Sprache</span>
+            <select id="f-lang" name="lang">
+              <option value="auto">Automatisch (Browsersprache)</option>
+              <option value="de">Deutsch</option>
+              <option value="en">Englisch</option>
+            </select>
+          </label>
+          <label><span>Symbol</span>
+            <input type="text" id="f-emoji" name="emoji" value="☕" maxlength="4">
+          </label>
+        </div>
+        <label><span>Überschrift <small>(leer = Standardtext)</small></span>
+          <input type="text" id="f-title" name="title" placeholder="Hilft dir die App?">
+        </label>
+        <label><span>Text</span>
+          <textarea id="f-text" name="text" rows="2" placeholder="Wenn ja, freu ich mich riesig über einen kleinen Beitrag. ❤️"></textarea>
+        </label>
+        <div class="row">
+          <label><span>Spenden-Button</span>
+            <input type="text" id="f-donate" name="donate" placeholder="Ein Latte Macchiato ausgeben? ;-)">
+          </label>
+          <label><span>Zweiter Button</span>
+            <input type="text" id="f-later" name="later" placeholder="Vielleicht später">
+          </label>
+        </div>
+        <p class="hint">Leere Felder nutzen den Standardtext der gewählten Sprache. Bei „Automatisch“ sehen Besucher Deutsch oder Englisch.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Wann erscheint der Hinweis?</legend>
+        <div class="row3">
+          <label><span>Erstes Mal nach <small>(Min.)</small></span><input type="number" id="f-firstDelay" name="firstDelay" value="10" min="0" step="1"></label>
+          <label><span>Danach frühestens <small>(Min.)</small></span><input type="number" id="f-minDelay" name="minDelay" value="10" min="0" step="1"></label>
+          <label><span>Spätestens <small>(Min.)</small></span><input type="number" id="f-maxDelay" name="maxDelay" value="30" min="0" step="1"></label>
+        </div>
+        <label><span>Ruhe nach Klick auf „Spenden“ <small>(Tage)</small></span>
+          <input type="number" id="f-graceDays" name="graceDays" value="30" min="0" step="1">
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Aussehen</legend>
+        <div class="row">
+          <label><span>Farbschema</span>
+            <span class="seg" role="group" aria-label="Farbschema" data-field="theme">
+              <button type="button" data-value="light" aria-pressed="true">Hell</button>
+              <button type="button" data-value="dark" aria-pressed="false">Dunkel</button>
+              <button type="button" data-value="auto" aria-pressed="false">Automatisch</button>
+            </span>
+          </label>
+          <label><span>Position</span>
+            <span class="seg" role="group" aria-label="Position" data-field="position">
+              <button type="button" data-value="left" aria-pressed="false">Links</button>
+              <button type="button" data-value="right" aria-pressed="true">Rechts</button>
+            </span>
+          </label>
+        </div>
+        <div class="row">
+          <label><span>Button-Farbe</span>
+            <span class="color-field"><input type="color" id="f-accent" name="accent" value="#22d3ee"><input type="text" id="f-accent-hex" value="#22d3ee" spellcheck="false" aria-label="Button-Farbe als Hex-Wert"></span>
+          </label>
+          <label><span>Schrift auf dem Button</span>
+            <span class="color-field"><input type="color" id="f-accentText" name="accentText" value="#06111f"><input type="text" id="f-accentText-hex" value="#06111f" spellcheck="false" aria-label="Schriftfarbe als Hex-Wert"></span>
+          </label>
+        </div>
+        <label><span>Speicher-Schlüssel <small>(je Projekt eigener Name, damit sich zwei Apps auf einer Domain nicht stören)</small></span>
+          <input type="text" id="f-storageKey" name="storageKey" value="donateWidget" spellcheck="false">
+        </label>
+      </fieldset>
+    </form>
+
+    <div class="stage">
+      <div class="appwin">
+        <div class="appwin-bar"><i></i><i></i><i></i><span id="mock-url">deine-app.de</span></div>
+        <div id="mock">
+          <div class="mock-rows" aria-hidden="true"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="stage-actions">
+        <button type="button" class="btn btn-main" id="btn-show">Hinweis zeigen</button>
+        <button type="button" class="btn" id="btn-reset">Einstellungen zurücksetzen</button>
+      </div>
+      <p class="hint" id="stage-hint">Die Vorschau aktualisiert sich bei jeder Änderung. Die Buttons lassen sich ausprobieren.</p>
+    </div>
+  </div>
+
+  <section class="code-section" aria-labelledby="code-h">
+    <h2 id="code-h">Einbauen</h2>
+    <ol class="steps">
+      <li>Im Tab <b>JavaScript-Datei</b> den Code kopieren und als <code class="inline">donate-widget.js</code> neben deine Seite legen.</li>
+      <li>Im Tab <b>Einbinden</b> die Zeile kopieren und vor <code class="inline">&lt;/body&gt;</code> einfügen. Sie enthält schon deine Einstellungen.</li>
+      <li>Optional: Mit den Befehlen aus <b>Steuerung</b> blendest du den Hinweis z. B. für zahlende Nutzer dauerhaft aus.</li>
+    </ol>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tab-embed" aria-selected="true" aria-controls="code-box">Einbinden</button>
+      <button type="button" role="tab" id="tab-file" aria-selected="false" aria-controls="code-box">JavaScript-Datei</button>
+      <button type="button" role="tab" id="tab-api" aria-selected="false" aria-controls="code-box">Steuerung</button>
+    </div>
+    <div class="code-box" id="code-box" role="tabpanel">
+      <button type="button" class="copy" id="btn-copy">Kopieren</button>
+      <pre id="code" tabindex="0"></pre>
+    </div>
+  </section>
+</div>
+
+<script src="donate-widget.js"></script>
+<script>
+(function () {
+  "use strict";
+  var KEY = "donate-widget-builder-v1";
+  var DEF = {
+    url: "https://www.paypal.com/donate/?hosted_button_id=EBGB8X7Y7AVKE", lang: "auto", emoji: "☕",
+    title: "", text: "", donate: "", later: "",
+    firstDelay: 10, minDelay: 10, maxDelay: 30, graceDays: 30,
+    theme: "light", position: "right", accent: "#22d3ee", accentText: "#06111f", storageKey: "donateWidget"
+  };
+  var WIDGET_DEF = { lang: "auto", emoji: "☕", firstDelay: 10, minDelay: 10, maxDelay: 30, graceDays: 30, theme: "light", position: "right", accent: "#22d3ee", accentText: "#06111f", storageKey: "donateWidget" };
+  var state = Object.assign({}, DEF);
+  var tab = "embed", fileSource = "";
+  var $ = function (id) { return document.getElementById(id); };
+  var TEXT_FIELDS = ["url", "lang", "emoji", "title", "text", "donate", "later", "firstDelay", "minDelay", "maxDelay", "graceDays", "storageKey", "accent", "accentText"];
+
+  try { Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (_) {}
+
+  function fillForm() {
+    TEXT_FIELDS.forEach(function (k) { var el = $("f-" + k); if (el) el.value = state[k]; });
+    $("f-accent-hex").value = state.accent; $("f-accentText-hex").value = state.accentText;
+    document.querySelectorAll(".seg").forEach(function (seg) {
+      var f = seg.dataset.field;
+      seg.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.value === state[f])); });
+    });
+  }
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
+
+  function changed() {
+    // Vorschau neu aufbauen und sichtbar lassen
+    $("mock").classList.toggle("mock-dark", state.theme === "dark" || (state.theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches));
+    try { $("mock-url").textContent = state.url ? "deine-app.de  →  Spenden: " + new URL(state.url).hostname : "deine-app.de"; } catch (_) { $("mock-url").textContent = "deine-app.de"; }
+    if (window.DonateWidget) {
+      DonateWidget.init(Object.assign({}, state, { container: "#mock", autoStart: false, storageKey: "donateWidgetPreview" }));
+      DonateWidget.show();
+    }
+    renderCode();
+    save();
+  }
+
+  function attr(v) { return String(v).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  function changedKeys() {
+    return Object.keys(state).filter(function (k) {
+      if (k === "url") return !!state.url;
+      if (["title", "text", "donate", "later"].indexOf(k) >= 0) return !!String(state[k]).trim();
+      return String(state[k]) !== String(WIDGET_DEF[k]);
+    });
+  }
+
+  function embedCode() {
+    var keys = changedKeys();
+    var attrs = keys.map(function (k) { return '\n        data-' + k.replace(/[A-Z]/g, function (c) { return "-" + c.toLowerCase(); }) + '="' + attr(state[k]) + '"'; }).join("");
+    return '<!-- Spenden-Widget: vor </body> einfügen, donate-widget.js liegt im selben Ordner -->\n<script src="donate-widget.js"' + attrs + '></' + 'script>';
+  }
+
+  function apiCode() {
+    return [
+      "// Zahlende Nutzer: Hinweis dauerhaft ausblenden (z. B. nach Eingabe einer Lizenz)",
+      "if (userHasLicense) DonateWidget.suppress(true);",
+      "",
+      "// Wieder einschalten",
+      "DonateWidget.suppress(false);",
+      "",
+      "// Sofort anzeigen, z. B. hinter einem eigenen „Unterstützen“-Link",
+      "document.querySelector('#supportLink').addEventListener('click', function (e) {",
+      "  e.preventDefault();",
+      "  DonateWidget.show();",
+      "});",
+      "",
+      "// Testen: „Später“ und „Gespendet“ vergessen",
+      "DonateWidget.reset();",
+      "",
+      "// Auf Klicks reagieren (z. B. für eigene Statistik)",
+      "document.addEventListener('donatewidget:donate', function () { /* Spenden-Button geklickt */ });",
+      "document.addEventListener('donatewidget:later',  function () { /* „Vielleicht später“ */ });",
+      "",
+      "// Ohne data-Attribute: alles per JavaScript einstellen",
+      "DonateWidget.init(" + JSON.stringify(changedKeys().reduce(function (o, k) { o[k] = isNaN(state[k]) || state[k] === "" || ["url","lang","emoji","title","text","donate","later","theme","position","accent","accentText","storageKey"].indexOf(k) >= 0 ? state[k] : Number(state[k]); return o; }, {}), null, 2) + ");"
+    ].join("\n");
+  }
+
+  function renderCode() {
+    var text = tab === "embed" ? embedCode() : tab === "file" ? (fileSource || "// donate-widget.js wird geladen …") : apiCode();
+    $("code").innerHTML = escHtml(text);
+    $("code").dataset.raw = text;
+  }
+
+  // Eingaben
+  $("settings").addEventListener("input", function (e) {
+    var t = e.target, k = t.name;
+    if (t.id === "f-accent-hex" || t.id === "f-accentText-hex") {
+      var key = t.id === "f-accent-hex" ? "accent" : "accentText";
+      if (/^#[0-9a-f]{6}$/i.test(t.value)) { state[key] = t.value; $("f-" + key).value = t.value; changed(); }
+      return;
+    }
+    if (!k) return;
+    state[k] = t.value;
+    if (k === "accent") $("f-accent-hex").value = t.value;
+    if (k === "accentText") $("f-accentText-hex").value = t.value;
+    changed();
+  });
+  $("settings").addEventListener("submit", function (e) { e.preventDefault(); });
+  document.querySelectorAll(".seg button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var seg = b.closest(".seg");
+      state[seg.dataset.field] = b.dataset.value;
+      seg.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      changed();
+    });
+  });
+
+  $("btn-show").addEventListener("click", function () { if (window.DonateWidget) { DonateWidget.reset(); DonateWidget.show(); } });
+  $("btn-reset").addEventListener("click", function () { state = Object.assign({}, DEF); fillForm(); changed(); });
+
+  document.querySelectorAll('[role="tab"]').forEach(function (b) {
+    b.addEventListener("click", function () {
+      tab = b.id.replace("tab-", "");
+      document.querySelectorAll('[role="tab"]').forEach(function (x) { x.setAttribute("aria-selected", String(x === b)); });
+      renderCode();
+    });
+  });
+
+  $("btn-copy").addEventListener("click", function () {
+    var text = $("code").dataset.raw || "", btn = this;
+    var done = function () { btn.textContent = "Kopiert"; btn.classList.add("done"); setTimeout(function () { btn.textContent = "Kopieren"; btn.classList.remove("done"); }, 1800); };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents($("code"));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Markiert – jetzt kopieren";
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (_) { fallback(); }
+  });
+
+  // Spenden-Klick in der Vorschau: Hinweis erklären statt zu verschwinden
+  document.addEventListener("donatewidget:donate", function () { $("stage-hint").textContent = "Spenden-Button geklickt: Der Link öffnet sich in einem neuen Tab, danach ist für die eingestellten Tage Ruhe."; });
+  document.addEventListener("donatewidget:later", function () { $("stage-hint").textContent = "„Vielleicht später“: Der Hinweis kommt nach der eingestellten Zeit wieder. Mit „Hinweis zeigen“ erneut ansehen."; });
+
+  fetch("donate-widget.js").then(function (r) { return r.ok ? r.text() : ""; }).then(function (txt) { fileSource = txt || "// Datei konnte nicht geladen werden."; if (tab === "file") renderCode(); }).catch(function () {});
+
+  fillForm();
+  changed();
+})();
+</script>

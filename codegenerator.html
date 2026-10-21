@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SGM Codes">
+<meta name="robots" content="noindex, nofollow">
+<title>SGM · Code Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg:      #0a0a0f;
+    --surface: #111118;
+    --border:  #1e1e2e;
+    --accent:  #67e8f9;
+    --accent2: #a78bfa;
+    --text:    #e2e8f0;
+    --muted:   #4a5568;
+    --ok:      #4ade80;
+    --err:     #f87171;
+    --pro:     #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: .4;
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 44px;
+    width: 100%;
+    max-width: 740px;
+    box-shadow: 0 0 60px rgba(103,232,249,.06);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+
+  h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 4px; }
+  h1 span { color: var(--accent); }
+
+  .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn.pro-tab.active { color: var(--pro); border-bottom-color: var(--pro); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Fields ── */
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .secret-row { display: flex; gap: 8px; margin-bottom: 28px; }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="date"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+    transition: border-color .2s;
+  }
+  input:focus { outline: none; border-color: var(--accent); }
+
+  .range-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .person-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .person-grid .full { grid-column: 1 / -1; }
+
+  /* ── Buttons ── */
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: opacity .15s, transform .1s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0a0f;
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    letter-spacing: .02em;
+    margin-bottom: 20px;
+  }
+  .btn-primary:hover { opacity: .88; }
+
+  .btn-pro {
+    background: var(--pro);
+    color: #0a0a0f;
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+    letter-spacing: .02em;
+    margin-bottom: 20px;
+  }
+  .btn-pro:hover { opacity: .88; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Code rows ── */
+  #output, #licenseOutput {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .code-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    animation: fadeIn .25s ease both;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .code-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); width: 28px; flex-shrink: 0; }
+  .code-value { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; letter-spacing: .1em; color: var(--accent); flex: 1; }
+  .code-value.pro { color: var(--pro); }
+  .code-meta { font-size: 11px; color: var(--muted); flex: 1.2; line-height: 1.4; }
+
+  .copy-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px 10px;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--ok); color: var(--ok); }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .empty-hint { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  .validate-row { display: flex; gap: 8px; }
+  .validate-result {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    min-height: 20px;
+  }
+  .validate-result.ok  { color: var(--ok); }
+  .validate-result.err { color: var(--err); }
+
+  .pro-badge {
+    display: inline-block;
+    background: var(--pro);
+    color: #0a0a0f;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: .05em;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  /* ── Feature Manager ── */
+  .feature-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .feature-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .feature-table th:not(:first-child) { text-align: center; width: 90px; }
+  .feature-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .feature-table td:not(:first-child) { text-align: center; }
+  .feature-table tr:last-child td { border-bottom: none; }
+  .feature-table tr:hover td { background: rgba(255,255,255,.02); }
+
+  .feat-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    display: block;
+  }
+  .feat-label {
+    font-size: 13px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .feat-desc { font-size: 11px; color: var(--muted); }
+
+  .tier-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .tier-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .tier-btn.active-free  { background: #22c55e; color: #000; }
+  .tier-btn.active-pro   { background: var(--pro); color: #000; }
+  .tier-btn:not(.active-free):not(.active-pro):hover { color: var(--text); }
+
+  .snippet-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    color: var(--accent2);
+    margin-bottom: 12px;
+    min-height: 60px;
+  }
+  .snippet-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .add-feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .add-feature-row input { margin: 0; }
+
+  /* ── Lizenz-Liste ── */
+  .lic-list-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .lic-count {
+    font-size: 11px;
+    color: var(--muted);
+    margin-right: auto;
+  }
+  .lic-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .lic-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    padding: 0 10px 8px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .lic-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .lic-table tr:last-child td { border-bottom: none; }
+  .lic-table tr:hover td { background: rgba(255,255,255,.02); }
+  .lic-code {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--pro);
+    font-size: 12px;
+    letter-spacing: .05em;
+  }
+  .lic-search {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    width: 100%;
+    margin-bottom: 10px;
+    transition: border-color .2s;
+  }
+  .lic-search:focus { outline: none; border-color: var(--pro); }
+
+  /* ── Version Tab ── */
+  textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    width: 100%;
+    resize: vertical;
+    transition: border-color .2s;
+    line-height: 1.6;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .version-lang-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .version-lang-section { display: flex; flex-direction: column; gap: 8px; }
+  .version-lang-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .version-lang-label.de { background: rgba(103,232,249,.12); color: var(--accent); border: 1px solid rgba(103,232,249,.2); }
+  .version-lang-label.en { background: rgba(167,139,250,.12); color: var(--accent2); border: 1px solid rgba(167,139,250,.2); }
+  .version-sub-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin: 10px 0 4px;
+  }
+  .pro-sub-label { color: var(--pro) !important; }
+  .version-number-row { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 24px; }
+  .version-number-row input { max-width: 200px; margin: 0; }
+  .version-info-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+  .version-info-box code { color: var(--accent2); font-family: 'JetBrains Mono', monospace; }
+
+  .file-link-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .file-link-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .file-link-name.empty { color: var(--muted); font-style: italic; }
+  .write-result {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    min-height: 20px;
+    padding: 8px 0;
+  }
+  .write-result.ok  { color: var(--ok); }
+  .write-result.err { color: var(--err); }
+  .lic-backup-box { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; background: rgba(103,232,249,.04); }
+  .lic-backup-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; font-size: 13px; }
+  .lic-backup-status { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .lic-backup-status.ok { color: var(--ok); }
+  .lic-backup-status.warn { color: var(--pro); }
+  .lic-backup-status.err { color: var(--err); }
+  .lic-backup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .lic-backup-hint { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+  /* ── Server-Speicher ── */
+  .srv-box { border: 1px solid rgba(245,158,11,.35); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; background: rgba(245,158,11,.05); }
+  .srv-box.connected { border-color: rgba(74,222,128,.35); background: rgba(74,222,128,.05); }
+  .srv-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .srv-form #srvUrl { grid-column: 1 / -1; }
+  .srv-remember { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .srv-remember input { width: 16px; height: 16px; accent-color: var(--pro); }
+  .srv-connect { margin: 0 !important; padding: 10px !important; }
+  .srv-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .srv-backups { margin-top: 12px; max-height: 260px; overflow-y: auto; }
+  .srv-backup-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  body.server-mode .secret-block { display: none; }
+  body.server-mode .lic-backup-box .lic-backup-hint { display: none; }
+  input[type="password"], input[type="url"] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+    padding: 10px 14px; font-family: 'JetBrains Mono', monospace; font-size: 13px; width: 100%; transition: border-color .2s;
+  }
+  .btn:disabled { opacity: .6; cursor: progress; }
+  .code-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  a.copy-btn { text-decoration: none; display: inline-flex; align-items: center; }
+  .lic-table a { color: var(--muted); text-decoration: none; }
+  .lic-table a:hover { color: var(--accent); }
+  .lic-td-date { color: var(--muted); white-space: nowrap; }
+  .lic-last-m { display: none; }
+  .lic-seed { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: .6; }
+  .lic-td-act { white-space: nowrap; text-align: right; }
+  .lic-td-act .copy-btn + .copy-btn { margin-left: 4px; }
+  .copy-btn.lic-del { color: var(--err); border-color: rgba(248,113,113,.5); }
+  .cg-toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px);
+    background: #1e293b; color: var(--text); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; font-size: 13px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 50; max-width: calc(100vw - 32px);
+  }
+  .cg-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ── Mobil ── */
+  @media (max-width: 700px) {
+    body { padding: 0; display: block; }
+    body::before { display: none; }
+    .card {
+      border-radius: 0; border-left: none; border-right: none; max-width: none;
+      padding: calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
+      min-height: 100vh;
+    }
+    .card::before { border-radius: 0; left: 0; right: 0; }
+    html, body { overflow-x: hidden; }
+    h1 { font-size: 20px; }
+    .subtitle { margin-bottom: 14px; }
+
+    /* Tabs: wischbar, bleiben oben stehen */
+    .tabs {
+      position: sticky; top: 0; z-index: 20; background: var(--surface);
+      overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      margin: 0 -16px 20px; padding: 0 12px;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn { white-space: nowrap; padding: 12px 12px; flex-shrink: 0; }
+
+    /* Eingaben: 16px verhindert das automatische Hineinzoomen auf dem iPhone */
+    input[type="text"], input[type="number"], input[type="email"], input[type="date"],
+    input[type="password"], input[type="url"], textarea, .lic-search { font-size: 16px; min-height: 46px; }
+    input[type="date"] { -webkit-appearance: none; appearance: none; }
+    .lic-search { padding: 10px 12px; }
+
+    .range-row, .person-grid, .version-lang-grid, .add-feature-row, .srv-form, .two-col { grid-template-columns: 1fr !important; }
+    .stats-grid { grid-template-columns: 1fr 1fr 1fr !important; gap: 8px !important; }
+    .stats-grid > div { padding: 10px !important; }
+    .stats-grid [id^="stat"] { font-size: 24px !important; }
+
+    .btn { min-height: 44px; }
+    .btn-ghost { padding: 10px 14px; font-size: 13px; }
+    .copy-btn { min-height: 34px; padding: 6px 12px; font-size: 12px; }
+    .toolbar, .snippet-toolbar, .lic-list-toolbar, .lic-backup-actions, .srv-actions { flex-wrap: wrap; justify-content: stretch; }
+    .toolbar .btn, .snippet-toolbar .btn, .lic-backup-actions .btn, .srv-actions .btn { flex: 1 1 auto; }
+    .lic-count { width: 100%; margin: 0 0 4px; }
+    .lic-list-toolbar .btn { flex: 1 1 auto; }
+    .validate-row, .secret-row { flex-wrap: wrap; }
+    .validate-row .btn { width: 100%; }
+    .version-number-row { flex-wrap: wrap; }
+    .version-number-row input { max-width: none; }
+    .file-link-row { flex-wrap: wrap; }
+    .file-link-name { flex-basis: 100%; }
+
+    /* Erzeugte Codes */
+    .code-row { flex-wrap: wrap; row-gap: 6px; }
+    .code-value { flex: 1 1 auto; font-size: 16px; letter-spacing: .06em; }
+    .code-meta { order: 3; flex-basis: 100%; padding-left: 38px; }
+    .code-actions { margin-left: auto; }
+
+    /* Lizenzliste als Karten */
+    .lic-table, .lic-table tbody { display: block; }
+    .lic-table thead { display: none; }
+    .lic-table tr {
+      display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name act" "mail act" "code date";
+      gap: 4px 10px; padding: 12px; margin-bottom: 8px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    }
+    .lic-table tr:hover td { background: none; }
+    .lic-table td { padding: 0; border: none !important; min-width: 0; }
+    .lic-td-name { grid-area: name; font-size: 14px; font-weight: 700; }
+    .lic-td-last { display: none; }
+    .lic-last-m { display: inline; }
+    .lic-td-mail { grid-area: mail; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+    .lic-td-code { grid-area: code; }
+    .lic-td-code .lic-code { font-size: 14px; }
+    .lic-td-date { grid-area: date; text-align: right; font-size: 12px; align-self: center; }
+    .lic-td-act { grid-area: act; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+    .lic-td-act .copy-btn + .copy-btn { margin-left: 0; }
+
+    /* Feature-Tabelle seitlich wischbar statt gequetscht */
+    .feature-table { display: block; overflow-x: auto; white-space: nowrap; }
+    .snippet-box { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>SGM <span>·</span> Code Generator</h1>
+  <p class="subtitle">Studio Gear Manager — Code Verwaltung</p>
+
+  <!-- ── Tabs ── -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('donor')">Spenden-Codes</button>
+    <button class="tab-btn pro-tab" onclick="switchTab('license')">Lizenzen <span class="pro-badge">PRO</span></button>
+    <button class="tab-btn" onclick="switchTab('features')" style="color:var(--ok)">Feature-Manager</button>
+    <button class="tab-btn" onclick="switchTab('version')" style="color:var(--accent2)">Version</button>
+    <button class="tab-btn" onclick="switchTab('users')" style="color:#a78bfa">Benutzer</button>
+    <button class="tab-btn" onclick="switchTab('limits')" style="color:var(--err)">Limits</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB: Spenden-Codes (unverändert)
+       ══════════════════════════════════════ -->
+  <div id="tab-donor" class="tab-panel active">
+
+    <div class="secret-block">
+    <div class="field-label">DONOR_SECRET (aus app.js)</div>
+    <div class="secret-row">
+      <input type="text" id="secretInput" value="" placeholder="wird nach dem Server-Login automatisch gesetzt" spellcheck="false" autocomplete="off" onchange="storeSecrets()" />
+    </div>
+    </div>
+
+    <div class="field-label">Seed-Bereich</div>
+    <div class="range-row">
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">VON</div>
+        <input type="number" id="seedFrom" value="1" min="1" max="99999" />
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">BIS</div>
+        <input type="number" id="seedTo" value="5" min="1" max="99999" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateCodes()">▶ Codes generieren</button>
+
+    <div class="toolbar" id="toolbar" style="display:none">
+      <button class="btn btn-ghost" onclick="copyAll()">Alle kopieren</button>
+      <button class="btn btn-ghost" onclick="downloadTxt()">Als .txt speichern</button>
+    </div>
+
+    <div id="output"><p class="empty-hint">Codes erscheinen hier.</p></div>
+
+    <hr class="divider">
+
+    <div class="field-label">Code prüfen</div>
+    <div class="validate-row">
+      <input type="text" id="validateInput" placeholder="SGM-XXXX-XXXX-XXXX"
+        maxlength="19" spellcheck="false" oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter') validateDonorCode()" />
+      <button class="btn btn-ghost" onclick="validateDonorCode()">Prüfen</button>
+    </div>
+    <div class="validate-result" id="validateResult"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB: Lizenzen (Pro)
+       ══════════════════════════════════════ -->
+  <div id="tab-license" class="tab-panel">
+
+    <div class="secret-block">
+    <div class="field-label">LICENSE_SECRET (aus app.js)</div>
+    <div class="secret-row">
+      <input type="text" id="licSecretInput" value="" placeholder="wird nach dem Server-Login automatisch gesetzt" spellcheck="false" autocomplete="off" onchange="storeSecrets()" />
+    </div>
+    </div>
+
+    <div class="field-label">Empfänger-Daten</div>
+    <div class="person-grid">
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">VORNAME</div>
+        <input type="text" id="licFirstName" placeholder="Max" />
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">NACHNAME</div>
+        <input type="text" id="licLastName" placeholder="Mustermann" />
+      </div>
+      <div class="full">
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">E-MAIL</div>
+        <input type="email" id="licEmail" placeholder="max@beispiel.de" />
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">KAUFDATUM</div>
+        <input type="date" id="licDate" />
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">SEED (eindeutige Nr.)</div>
+        <input type="number" id="licSeed" value="1" min="1" max="99999" />
+      </div>
+    </div>
+
+    <button class="btn btn-pro" id="licGenerateBtn" onclick="generateLicenseCode()">▶ Lizenzcode generieren</button>
+
+    <div class="toolbar" id="licToolbar" style="display:none">
+      <button class="btn btn-ghost" onclick="copyAllLicenses()">Session kopieren</button>
+      <button class="btn btn-ghost" onclick="downloadLicenseCsv()">Session als .csv</button>
+    </div>
+
+    <div id="licenseOutput"><p class="empty-hint">Generierte Lizenzen erscheinen hier.</p></div>
+
+    <hr class="divider">
+
+    <div class="field-label">Lizenzcode prüfen</div>
+    <div class="validate-row">
+      <input type="text" id="licValidateInput" placeholder="SGMP-XXXX-XXXX-XXXX"
+        maxlength="19" spellcheck="false" oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter') validateLicenseInput()" />
+      <button class="btn btn-ghost" onclick="validateLicenseInput()">Prüfen</button>
+    </div>
+    <div class="validate-result" id="licValidateResult"></div>
+
+    <hr class="divider">
+
+    <!-- Server-Speicher -->
+    <div class="srv-box" id="srvBox">
+      <div class="lic-backup-head">
+        <strong>Server-Speicher</strong>
+        <span id="srvStatus" class="lic-backup-status">nicht verbunden</span>
+      </div>
+      <div class="srv-form" id="srvForm">
+        <input type="url" id="srvUrl" placeholder="https://deine-domain.de/sgm/licenses.php" spellcheck="false" autocomplete="url" />
+        <input type="password" id="srvPass" placeholder="Passwort aus licenses.php" autocomplete="current-password" onkeydown="if(event.key==='Enter') serverConnect()" />
+        <label class="srv-remember"><input type="checkbox" id="srvRemember" checked> Auf diesem Gerät angemeldet bleiben</label>
+        <button class="btn btn-pro srv-connect" onclick="serverConnect()">Verbinden</button>
+      </div>
+      <div class="srv-actions" id="srvActions" style="display:none">
+        <button class="btn btn-ghost" onclick="serverRefresh(true)">↻ Aktualisieren</button>
+        <button class="btn btn-ghost" onclick="serverShowBackups()">Server-Sicherungen</button>
+        <button class="btn btn-ghost" onclick="serverDisconnect()">Abmelden</button>
+      </div>
+      <div id="srvBackups" class="srv-backups" style="display:none"></div>
+      <p class="lic-backup-hint">Mit Server-Speicher liegt die Liste auf deinem Webserver und ist auf jedem Gerät gleich. Der Server vergibt die Seed-Nummern, sodass kein Code doppelt entsteht, und legt bei jeder Änderung automatisch eine Sicherung an.</p>
+    </div>
+
+    <!-- Sicherung der Pro-User-Datenbank -->
+    <div class="lic-backup-box">
+      <div class="lic-backup-head">
+        <strong>Lokale Sicherung</strong>
+        <span id="licBackupStatus" class="lic-backup-status"></span>
+      </div>
+      <div class="lic-backup-actions">
+        <button class="btn btn-ghost" id="licBackupFileBtn" onclick="connectLicenseBackupFile()">Sicherungsdatei verbinden</button>
+        <button class="btn btn-ghost" onclick="exportLicenseListJson()">Als .json sichern</button>
+        <label class="btn btn-ghost" style="cursor:pointer">.json / .csv importieren
+          <input type="file" accept=".json,.csv,application/json,text/csv" style="display:none" onchange="importLicenseListJson(this.files[0]); this.value=''">
+        </label>
+      </div>
+      <p class="lic-backup-hint">Die Liste liegt im Speicher dieses Browsers. Mit einer verbundenen Sicherungsdatei wird nach jeder neuen Lizenz automatisch eine Kopie auf deine Festplatte geschrieben (Chrome/Edge). In anderen Browsern bitte regelmäßig „Als .json sichern".</p>
+    </div>
+
+    <!-- Persistente Lizenz-Liste -->
+    <div class="lic-list-toolbar">
+      <span class="lic-count" id="licListCount"></span>
+      <button class="btn btn-ghost" onclick="exportLicenseListCsv()">Als .csv exportieren</button>
+      <button class="btn btn-ghost" style="color:var(--err);border-color:var(--err)" onclick="clearLicenseList()">Liste leeren</button>
+    </div>
+    <input type="text" class="lic-search" id="licSearch" placeholder="Suchen nach Name, E-Mail oder Code …" oninput="renderLicenseList()" />
+    <div style="overflow-x:auto">
+      <table class="lic-table">
+        <thead>
+          <tr>
+            <th>Vorname</th>
+            <th>Nachname</th>
+            <th>E-Mail</th>
+            <th>Lizenzcode</th>
+            <th>Datum</th>
+            <th style="width:72px"></th>
+          </tr>
+        </thead>
+        <tbody id="licListBody"></tbody>
+      </table>
+    </div>
+    <p class="empty-hint" id="licListEmpty" style="display:none">Noch keine Lizenzen gespeichert.</p>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB: Feature-Manager
+       ══════════════════════════════════════ -->
+  <div id="tab-features" class="tab-panel">
+
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Lege hier fest, welche Funktionen für <strong style="color:#22c55e">alle User</strong> (Free + Pro)
+      und welche <strong style="color:var(--pro)">exklusiv für Pro</strong> verfügbar sind.
+      Die Pro-Version enthält immer alle Free-Funktionen. Generiere dann den <code style="color:var(--accent2)">PRO_FEATURES</code>-Snippet
+      und füge ihn in <code style="color:var(--accent2)">app.js</code> ein.
+    </p>
+
+    <!-- Neue Feature hinzufügen -->
+    <div class="field-label">Neue Funktion hinzufügen</div>
+    <div class="add-feature-row">
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">KEY (camelCase)</div>
+        <input type="text" id="newFeatKey" placeholder="myFeature" spellcheck="false" />
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">NAME</div>
+        <input type="text" id="newFeatLabel" placeholder="Meine Funktion" />
+      </div>
+      <div>
+        <div class="field-label" style="font-size:10px;margin-bottom:4px">BESCHREIBUNG</div>
+        <input type="text" id="newFeatDesc" placeholder="Kurze Beschreibung" />
+      </div>
+      <button class="btn btn-ghost" onclick="addFeature()" style="height:41px;align-self:end">+ Hinzufügen</button>
+    </div>
+
+    <!-- Feature-Tabelle -->
+    <table class="feature-table" id="featureTable">
+      <thead>
+        <tr>
+          <th>Funktion</th>
+          <th>Alle (Free + Pro)</th>
+          <th>Nur Pro ⭐</th>
+          <th style="width:40px"></th>
+        </tr>
+      </thead>
+      <tbody id="featureTbody"></tbody>
+    </table>
+
+    <!-- app.js verknüpfen -->
+    <div class="field-label">app.js verknüpfen</div>
+    <div class="file-link-row">
+      <span class="file-link-name empty" id="featAppJsFileName">Noch keine Datei ausgewählt</span>
+      <button class="btn btn-ghost" onclick="pickAppJs()">📂 app.js auswählen</button>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateAndWriteFeatures()">▶ In app.js schreiben</button>
+    <div class="write-result" id="featWriteResult"></div>
+
+    <!-- Generierter Snippet (Vorschau) -->
+    <div class="field-label" style="margin-top:20px">Vorschau Snippet</div>
+    <div class="snippet-box" id="featSnippet">— klicke auf eine Zeile oder „Snippet generieren" —</div>
+    <div class="snippet-toolbar">
+      <button class="btn btn-ghost" onclick="generateSnippet()">↺ Snippet aktualisieren</button>
+      <button class="btn btn-ghost" onclick="copySnippet()">Kopieren</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB: Version / What's New
+       ══════════════════════════════════════ -->
+  <div id="tab-version" class="tab-panel">
+
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Trage Versionsnummer und Releasetexte ein. Der generierte Snippet enthält
+      <code style="color:var(--accent2)">WHATS_NEW</code> + <code style="color:var(--accent2)">showWhatsNewIfNeeded()</code>
+      — einmalig in <code style="color:var(--accent2)">app.js</code> einfügen und in der Boot-Sequenz aufrufen.
+    </p>
+
+    <div class="field-label">Versionsnummer</div>
+    <div class="version-number-row">
+      <input type="text" id="versionNumber" placeholder="1.0.2" spellcheck="false" oninput="saveVersionData()" />
+    </div>
+
+    <div class="version-lang-grid">
+
+      <!-- DEUTSCH -->
+      <div class="version-lang-section">
+        <div><span class="version-lang-label de">🇩🇪 Deutsch</span></div>
+        <div class="version-sub-label">Free – Versionshinweise</div>
+        <textarea id="verNotesDeF" rows="7"
+          placeholder="Was ist neu in dieser Version&#10;&#10;• Neue Funktion XY&#10;• Bug-Fix: …"
+          oninput="saveVersionData()"></textarea>
+        <div class="version-sub-label pro-sub-label">⭐ Pro – Zusatzhinweise (optional)</div>
+        <textarea id="verNotesDePro" rows="4"
+          placeholder="Exklusiv für Pro-User:&#10;• …"
+          oninput="saveVersionData()"></textarea>
+      </div>
+
+      <!-- ENGLISH -->
+      <div class="version-lang-section">
+        <div><span class="version-lang-label en">🇬🇧 English</span></div>
+        <div class="version-sub-label">Free – Release notes</div>
+        <textarea id="verNotesEnF" rows="7"
+          placeholder="What's new in this version&#10;&#10;• New feature XY&#10;• Bug fix: …"
+          oninput="saveVersionData()"></textarea>
+        <div class="version-sub-label pro-sub-label">⭐ Pro – Additional notes (optional)</div>
+        <textarea id="verNotesEnPro" rows="4"
+          placeholder="Exclusive for Pro users:&#10;• …"
+          oninput="saveVersionData()"></textarea>
+      </div>
+
+    </div>
+
+    <!-- app.js verknüpfen -->
+    <div class="field-label">app.js verknüpfen</div>
+    <div class="file-link-row">
+      <span class="file-link-name empty" id="appJsFileName">Noch keine Datei ausgewählt</span>
+      <button class="btn btn-ghost" onclick="pickAppJs()">📂 app.js auswählen</button>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateAndWrite()">▶ In app.js schreiben</button>
+    <div class="write-result" id="writeResult"></div>
+
+    <div class="field-label" style="margin-top:20px">Vorschau Snippet</div>
+    <div class="snippet-box" id="versionSnippet">— Datei verknüpfen, Texte eingeben und „In app.js schreiben" klicken —</div>
+    <div class="snippet-toolbar">
+      <button class="btn btn-ghost" onclick="copyVersionSnippet()">Snippet kopieren</button>
+    </div>
+
+    <div class="version-info-box">
+      <strong style="color:var(--text)">Integration in app.js:</strong><br>
+      1. <code>WHATS_NEW</code>-Konstante ersetzen (oder neu einfügen, z.&nbsp;B. nach <code>APP_VERSION</code>)<br>
+      2. <code>showWhatsNewIfNeeded()</code> in der Boot-Sequenz aufrufen — nach <code>maybeShowStartup</code><br>
+      3. Pro-User sehen Free-Text + Pro-Zusatztext — Free-User nur den Free-Text<br>
+      4. Dialog erscheint einmalig pro Version — danach wird die Versionsnummer in <code>localStorage</code> gespeichert
+    </div>
+    <div class="version-info-box" style="margin-top:10px;border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06)">
+      <strong style="color:var(--pro)">⚠ Spenden- &amp; Lizenzcodes bleiben automatisch erhalten</strong><br>
+      Codes liegen im <code>localStorage</code> des Browsers und werden durch Updates nicht berührt — User müssen ihren Code <strong style="color:var(--text)">nicht erneut eingeben</strong>.<br><br>
+      <strong style="color:var(--pro)">⚠ DONOR_SECRET niemals ändern!</strong><br>
+      Wird <code>DONOR_SECRET</code> in einer neuen Version geändert, können bereits vergebene Codes nicht mehr neu eingelöst werden (gespeicherte Codes bleiben aber weiterhin aktiv).
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB: Benutzer
+       ══════════════════════════════════════ -->
+  <div id="tab-users" class="tab-panel">
+
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Ruft die aktuellen Nutzerzahlen von <code style="color:var(--accent2)">counter.php</code> ab.
+      Free- und Pro-User werden getrennt gezählt.
+    </p>
+
+    <div class="field-label">URL zu counter.php</div>
+    <div class="secret-row">
+      <input type="text" id="counterUrl" placeholder="https://deine-domain.de/counter.php" spellcheck="false" />
+      <button class="btn btn-ghost" onclick="fetchUserStats()">↻ Abrufen</button>
+    </div>
+
+    <div id="userStatsBox" style="display:none;margin-top:8px">
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px 20px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Gesamt</div>
+          <div id="statTotal" style="font-size:32px;font-weight:800;color:var(--text);font-family:'JetBrains Mono',monospace">—</div>
+        </div>
+        <div style="background:var(--bg);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:16px 20px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Free</div>
+          <div id="statFree" style="font-size:32px;font-weight:800;color:#4ade80;font-family:'JetBrains Mono',monospace">—</div>
+        </div>
+        <div style="background:var(--bg);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:16px 20px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Pro ⭐</div>
+          <div id="statPro" style="font-size:32px;font-weight:800;color:var(--pro);font-family:'JetBrains Mono',monospace">—</div>
+        </div>
+      </div>
+      <div id="statMeta" style="font-size:11px;color:var(--muted)"></div>
+    </div>
+
+    <div class="validate-result" id="userStatsError"></div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB: Limits
+       ══════════════════════════════════════ -->
+  <div id="tab-limits" class="tab-panel">
+
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Legt fest, wie viele Geräte Free-User anlegen können.
+      <code style="color:var(--accent2)">0</code> = unbegrenzt.
+      Der Wert wird als <code style="color:var(--accent)">FREE_DEVICE_LIMIT</code> in <code style="color:var(--accent2)">app.js</code> gespeichert.
+    </p>
+
+    <div class="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+      <div>
+        <div class="field-label">Max. Geräte (Free)</div>
+        <input type="number" id="limitsDeviceLimit" min="0" max="9999" value="25"
+               style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:14px;font-family:inherit"
+               oninput="saveLimitsData()" />
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">0 = kein Limit</div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:20px 0 20px"></div>
+    <div class="field-label" style="margin-bottom:14px">Spendenhinweis (Nag-Screen)</div>
+    <div class="two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px">
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">Mindestabstand (Minuten)</div>
+        <input type="number" id="limitsNagMin" min="1" max="1440" value="10"
+               style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:14px;font-family:inherit"
+               oninput="saveLimitsData()" />
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px">Maximalabstand (Minuten)</div>
+        <input type="number" id="limitsNagMax" min="1" max="1440" value="30"
+               style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:14px;font-family:inherit"
+               oninput="saveLimitsData()" />
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:20px">Zufälliger Abstand zwischen zwei Nag-Einblendungen. Nur für Free-User ohne Spenden-Code sichtbar.</div>
+
+    <!-- app.js Dateiauswahl -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <span class="file-link-name empty" id="limitsAppJsFileName">Noch keine Datei ausgewählt</span>
+      <button class="btn btn-ghost" onclick="pickAppJs()">📂 app.js auswählen</button>
+    </div>
+
+    <button class="btn btn-primary" onclick="writeLimitsToAppJs()" style="background:var(--err);border-color:var(--err)">▶ In app.js schreiben</button>
+
+    <div class="write-result" id="limitsWriteResult" style="margin-top:12px"></div>
+
+  </div>
+
+</div><!-- /.card -->
+
+<script>
+// ── Shared ──
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// switchTab ist unten im Feature-Manager definiert (3 Tabs)
+
+async function copyOne(btn, code) {
+  await navigator.clipboard.writeText(code).catch(() => {});
+  btn.textContent = '✓';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+}
+
+// ══════════════════════════════════════
+// DONOR CODES
+// ══════════════════════════════════════
+function getDonorSecret() {
+  return document.getElementById('secretInput').value.trim();
+}
+
+async function generateDonorCode(seed, secret) {
+  const base  = (await sha256hex(secret + 'seed-' + seed)).slice(0, 8).toUpperCase();
+  const check = (await sha256hex(secret + base)).slice(0, 4).toUpperCase();
+  return `SGM-${base.slice(0,4)}-${base.slice(4,8)}-${check}`;
+}
+
+let generatedCodes = [];
+
+async function generateCodes() {
+  const secret = getDonorSecret();
+  if (!secret) { alert('Kein DONOR_SECRET – bitte im Tab „Lizenzen“ mit dem Server verbinden oder das Secret eintragen.'); return; }
+  const from = Math.max(1, parseInt(document.getElementById('seedFrom').value) || 1);
+  const to   = Math.min(99999, parseInt(document.getElementById('seedTo').value) || 1);
+  if (from > to) { alert('Von muss kleiner als Bis sein.'); return; }
+  if (to - from > 499) { alert('Maximal 500 Codes auf einmal.'); return; }
+
+  const output = document.getElementById('output');
+  output.innerHTML = '';
+  generatedCodes = [];
+
+  for (let i = from; i <= to; i++) {
+    const code = await generateDonorCode(i, secret);
+    generatedCodes.push({ seed: i, code });
+    const row = document.createElement('div');
+    row.className = 'code-row';
+    row.style.animationDelay = `${(i - from) * 40}ms`;
+    row.innerHTML = `
+      <span class="code-num">#${i}</span>
+      <span class="code-value">${code}</span>
+      <button class="copy-btn" onclick="copyOne(this, '${code}')">copy</button>`;
+    output.appendChild(row);
+  }
+  document.getElementById('toolbar').style.display = generatedCodes.length ? 'flex' : 'none';
+}
+
+async function copyAll() {
+  const text = generatedCodes.map(c => `#${c.seed}\t${c.code}`).join('\n');
+  await navigator.clipboard.writeText(text).catch(() => {});
+}
+
+function downloadTxt() {
+  const text = generatedCodes.map(c => `#${c.seed}  ${c.code}`).join('\n');
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sgm-donor-codes.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function validateDonorCode() {
+  const input = document.getElementById('validateInput');
+  const code = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const result = document.getElementById('validateResult');
+  if (!code) { result.textContent = ''; result.className = 'validate-result'; return; }
+  if (!code.startsWith('SGM') || code.length !== 15) {
+    result.textContent = '✗ Ungültiges Format';
+    result.className = 'validate-result err'; return;
+  }
+  const secret = getDonorSecret();
+  if (!secret) { alert('Kein DONOR_SECRET – bitte im Tab „Lizenzen“ mit dem Server verbinden oder das Secret eintragen.'); return; }
+  const base = code.slice(3, 11), check = code.slice(11);
+  const hash = await sha256hex(secret + base);
+  const valid = hash.slice(0, 4).toUpperCase() === check;
+  result.textContent = valid ? '✓ Gültiger Spenden-Code' : '✗ Ungültiger Code';
+  result.className = 'validate-result ' + (valid ? 'ok' : 'err');
+}
+
+// ══════════════════════════════════════
+// LICENSE CODES (Pro)
+// ══════════════════════════════════════
+function getLicSecret() {
+  return document.getElementById('licSecretInput').value.trim();
+}
+
+async function generateLicCode(seed, secret) {
+  const base  = (await sha256hex(secret + 'seed-' + seed)).slice(0, 8).toUpperCase();
+  const check = (await sha256hex(secret + base)).slice(0, 4).toUpperCase();
+  return `SGMP-${base.slice(0,4)}-${base.slice(4,8)}-${check}`;
+}
+
+let generatedLicenses = [];
+
+// Persistente Lizenz-Liste
+const LIC_LIST_KEY = 'sgm-codegen-liclist-v1';
+
+function loadLicenseList() {
+  try {
+    const raw = localStorage.getItem(LIC_LIST_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch(_) { return []; }
+}
+
+function saveLicenseList(list) {
+  try {
+    localStorage.setItem(LIC_LIST_KEY, JSON.stringify(list));
+  } catch (e) {
+    alert('ACHTUNG: Die Lizenzliste konnte NICHT gespeichert werden (Browser-Speicher voll oder gesperrt).\n\nBitte sofort „Als .json sichern" klicken.');
+    return false;
+  }
+  scheduleLicenseFileBackup();
+  return true;
+}
+
+/* ── Sicherung der Pro-User-Datenbank ─────────────────────────
+   1. navigator.storage.persist(): Browser soll die Daten nicht automatisch löschen
+   2. Sicherungsdatei (File System Access API, Chrome/Edge): nach jeder Änderung automatisch
+   3. JSON-Export/-Import für alle Browser und zum Umzug auf einen anderen Rechner        */
+const LIC_BACKUP_TS_KEY = 'sgm-codegen-liclist-backup-ts-v1';
+const LIC_IDB_NAME = 'sgm-codegen', LIC_IDB_STORE = 'handles';
+let licBackupHandle = null;
+
+function idbHandle(mode, value) {
+  return new Promise((resolve) => {
+    if (!('indexedDB' in window)) return resolve(null);
+    const req = indexedDB.open(LIC_IDB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(LIC_IDB_STORE);
+    req.onerror = () => resolve(null);
+    req.onsuccess = () => {
+      const tx = req.result.transaction(LIC_IDB_STORE, mode === 'get' ? 'readonly' : 'readwrite');
+      const st = tx.objectStore(LIC_IDB_STORE);
+      const r = mode === 'get' ? st.get('licBackup') : st.put(value, 'licBackup');
+      r.onsuccess = () => resolve(mode === 'get' ? r.result || null : true);
+      r.onerror = () => resolve(null);
+    };
+  });
+}
+
+function licBackupPayload() {
+  return JSON.stringify({ type: 'sgm-licenses', version: 1, exportedAt: new Date().toISOString(), licenses: loadLicenseList() }, null, 2);
+}
+
+function markLicenseBackup() {
+  try { localStorage.setItem(LIC_BACKUP_TS_KEY, new Date().toISOString()); } catch (_) {}
+  renderLicenseBackupStatus();
+}
+
+let licBackupTimer = null;
+function scheduleLicenseFileBackup() {
+  renderLicenseBackupStatus();
+  if (!licBackupHandle) return;
+  clearTimeout(licBackupTimer);
+  licBackupTimer = setTimeout(writeLicenseBackupFile, 300);
+}
+
+async function writeLicenseBackupFile() {
+  if (!licBackupHandle) return false;
+  try {
+    let perm = await licBackupHandle.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') { renderLicenseBackupStatus('reconnect'); return false; }
+    const w = await licBackupHandle.createWritable();
+    await w.write(licBackupPayload());
+    await w.close();
+    markLicenseBackup();
+    return true;
+  } catch (e) {
+    renderLicenseBackupStatus('error');
+    return false;
+  }
+}
+
+async function connectLicenseBackupFile() {
+  if (!('showSaveFilePicker' in window)) {
+    alert('Automatische Sicherungsdatei wird von diesem Browser nicht unterstützt (nur Chrome/Edge).\nBitte „Als .json sichern" verwenden.');
+    return;
+  }
+  try {
+    if (licBackupHandle && (await licBackupHandle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+      // Bereits gewählte Datei nur wieder freigeben
+      if ((await licBackupHandle.requestPermission({ mode: 'readwrite' })) === 'granted') {
+        await writeLicenseBackupFile();
+        return;
+      }
+    }
+    licBackupHandle = await window.showSaveFilePicker({
+      suggestedName: 'sgm-pro-lizenzen.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+    });
+    await idbHandle('put', licBackupHandle);
+    await writeLicenseBackupFile();
+  } catch (e) {
+    if (e && e.name !== 'AbortError') alert('Sicherungsdatei konnte nicht verbunden werden: ' + e.message);
+  }
+}
+
+function exportLicenseListJson() {
+  const blob = new Blob([licBackupPayload()], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sgm-pro-lizenzen-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  markLicenseBackup();
+}
+
+/** CSV aus „Als .csv exportieren" (alte und neue Version): Vorname,Nachname,E-Mail,Lizenzcode,Datum */
+function parseLicenseCsv(text) {
+  const rows = text.split(/\r?\n/).filter((r) => r.trim());
+  const parseRow = (row) => {
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i];
+      if (q) { if (ch === '"' && row[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; }
+      else if (ch === '"') q = true; else if (ch === ',' || ch === ';') { out.push(cur); cur = ''; } else cur += ch;
+    }
+    out.push(cur);
+    return out.map((v) => v.trim());
+  };
+  const header = parseRow(rows.shift() || '').map((h) => h.toLowerCase());
+  const col = (names) => header.findIndex((h) => names.some((n) => h.includes(n)));
+  const iCode = col(['lizenzcode', 'code']);
+  if (iCode < 0) throw new Error('Spalte „Lizenzcode" nicht gefunden');
+  const iFirst = col(['vorname']), iLast = col(['nachname']), iMail = col(['e-mail', 'email']), iDate = col(['datum', 'kaufdatum']), iName = col(['name']);
+  return rows.map(parseRow).map((r) => {
+    let firstName = iFirst >= 0 ? r[iFirst] : '', lastName = iLast >= 0 ? r[iLast] : '';
+    if (!firstName && !lastName && iName >= 0) { const parts = (r[iName] || '').split(' '); firstName = parts.shift() || ''; lastName = parts.join(' '); }
+    return { firstName, lastName, email: iMail >= 0 ? r[iMail] : '', code: (r[iCode] || '').toUpperCase(), date: iDate >= 0 ? r[iDate] : '' };
+  }).filter((l) => /^SGMP-/.test(l.code));
+}
+
+/** Fehlenden Seed aus dem Code zurückrechnen — nötig, damit der nächste freie Seed stimmt. */
+async function recoverSeeds(entries) {
+  const missing = entries.filter((l) => !l.seed);
+  if (!missing.length) return;
+  const wanted = new Map(missing.map((l) => [l.code, l]));
+  const secret = getLicSecret();
+  for (let seed = 1; seed <= 20000 && wanted.size; seed++) {
+    const code = await generateLicCode(seed, secret);
+    if (wanted.has(code)) { wanted.get(code).seed = seed; wanted.delete(code); }
+  }
+}
+
+function importLicenseListJson(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const text = String(reader.result).replace(/^\uFEFF/, '');
+      let incoming;
+      if (/\.csv$/i.test(file.name) || !/^\s*[\[{]/.test(text)) {
+        incoming = parseLicenseCsv(text);
+      } else {
+        const data = JSON.parse(text);
+        incoming = Array.isArray(data) ? data : data.licenses;
+      }
+      if (!Array.isArray(incoming) || !incoming.length) throw new Error('Keine Lizenzliste gefunden');
+      if (srv.connected) {
+        if (!confirm(`${incoming.length} Einträge in der Datei. Neue Einträge auf den Server übernehmen?\n(Bestehende bleiben unverändert, ungültige Codes werden übersprungen.)`)) return;
+        const res = await serverCall('merge', { licenses: incoming });
+        alert(`${res.added} Lizenzen übernommen${res.invalid ? `, ${res.invalid} ungültige übersprungen` : ''}.`);
+        renderLicenseList(); updateNextLicenseSeed();
+        return;
+      }
+      await recoverSeeds(incoming);
+      const list = loadLicenseList();
+      const known = new Set(list.map((l) => l.code));
+      const added = incoming.filter((l) => l && l.code && !known.has(l.code));
+      if (!confirm(`${incoming.length} Einträge in der Datei, davon ${added.length} neu. Neue Einträge übernehmen?\n(Bestehende Einträge bleiben unverändert.)`)) return;
+      saveLicenseList(list.concat(added));
+      renderLicenseList();
+      updateNextLicenseSeed();
+    } catch (e) {
+      alert('Import fehlgeschlagen: ' + e.message);
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function renderLicenseBackupStatus(state) {
+  const el = document.getElementById('licBackupStatus');
+  const btn = document.getElementById('licBackupFileBtn');
+  if (!el) return;
+  const count = loadLicenseList().length;
+  const ts = localStorage.getItem(LIC_BACKUP_TS_KEY);
+  if (btn) btn.textContent = licBackupHandle ? (state === 'reconnect' ? 'Sicherungsdatei wieder freigeben' : 'Andere Sicherungsdatei wählen') : 'Sicherungsdatei verbinden';
+  if (state === 'error') { el.textContent = '✗ Schreiben in die Sicherungsdatei fehlgeschlagen'; el.className = 'lic-backup-status err'; return; }
+  if (state === 'reconnect') { el.textContent = '⚠ Sicherungsdatei braucht erneute Freigabe (Button klicken)'; el.className = 'lic-backup-status warn'; return; }
+  if (typeof srv !== 'undefined' && srv.connected) { el.textContent = '✓ Server sichert automatisch – Datei-Export optional'; el.className = 'lic-backup-status ok'; return; }
+  if (!count) { el.textContent = 'Noch keine Lizenzen'; el.className = 'lic-backup-status'; return; }
+  if (!ts) { el.textContent = `⚠ ${count} Lizenzen — noch nie gesichert`; el.className = 'lic-backup-status warn'; return; }
+  const days = (Date.now() - new Date(ts).getTime()) / 86400000;
+  const when = new Date(ts).toLocaleString('de-DE');
+  const unsaved = licUnsavedSinceBackup();
+  el.textContent = unsaved ? `⚠ Ungesicherte Änderungen — letzte Sicherung ${when}` : `✓ Gesichert ${when}${licBackupHandle ? ' (automatisch)' : ''}`;
+  el.className = 'lic-backup-status ' + (unsaved || days > 30 ? 'warn' : 'ok');
+}
+
+function licUnsavedSinceBackup() {
+  const ts = localStorage.getItem(LIC_BACKUP_TS_KEY);
+  if (!ts) return loadLicenseList().length > 0;
+  return loadLicenseList().some((l) => l.createdAt && l.createdAt > ts);
+}
+
+/** Nächster freier Seed = höchster vergebener + 1 — verhindert doppelte Codes nach einem Neuladen. */
+function updateNextLicenseSeed() {
+  const maxSeed = loadLicenseList().reduce((m, l) => Math.max(m, Number(l.seed) || 0), 0);
+  const input = document.getElementById('licSeed');
+  if (input && Number(input.value) <= maxSeed) input.value = maxSeed + 1;
+}
+
+async function initLicenseBackup() {
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (_) {}
+  licBackupHandle = await idbHandle('get');
+  updateNextLicenseSeed();
+  renderLicenseBackupStatus(licBackupHandle && (await licBackupHandle.queryPermission?.({ mode: 'readwrite' })) !== 'granted' ? 'reconnect' : undefined);
+}
+
+function renderLicenseList() {
+  const list    = loadLicenseList();
+  const query   = (document.getElementById('licSearch')?.value || '').toLowerCase();
+  const tbody   = document.getElementById('licListBody');
+  const empty   = document.getElementById('licListEmpty');
+  const countEl = document.getElementById('licListCount');
+  if (!tbody) return;
+
+  const filtered = query
+    ? list.filter(l =>
+        (l.firstName + ' ' + l.lastName + ' ' + l.email + ' ' + l.code)
+          .toLowerCase().includes(query))
+    : list;
+
+  if (countEl) countEl.textContent = `${filtered.length} / ${list.length} Lizenzen`;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.slice().reverse().map((l) => `
+    <tr>
+      <td class="lic-td-name" data-label="Name"><span class="lic-first">${escHtml(l.firstName)}</span><span class="lic-last-m"> ${escHtml(l.lastName)}</span></td>
+      <td class="lic-td-last" data-label="Nachname">${escHtml(l.lastName)}</td>
+      <td class="lic-td-mail" data-label="E-Mail">${l.email ? `<a href="mailto:${escHtml(l.email)}">${escHtml(l.email)}</a>` : ''}</td>
+      <td class="lic-td-code" data-label="Code"><span class="lic-code">${escHtml(l.code)}</span></td>
+      <td class="lic-td-date" data-label="Datum">${escHtml(l.date)}${l.seed ? ` <span class="lic-seed">#${escHtml(l.seed)}</span>` : ''}</td>
+      <td class="lic-td-act">
+        <button class="copy-btn" onclick="copyOne(this, '${escHtml(l.code)}')" title="Code kopieren">copy</button>
+        <button class="copy-btn lic-del" onclick="deleteLicenseEntry(${list.indexOf(l)})" title="Löschen" aria-label="Löschen">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function deleteLicenseEntry(idx) {
+  const list = loadLicenseList();
+  const l = list[idx];
+  if (!l || !confirm(`Lizenz ${l.code} (${[l.firstName, l.lastName].filter(Boolean).join(' ') || l.email || '—'}) aus der Liste löschen?\nDer Code bleibt in der App des Kunden gültig.`)) return;
+  if (srv.connected) {
+    serverCall('delete', { code: l.code }).then(() => renderLicenseList()).catch(serverError);
+    return;
+  }
+  list.splice(idx, 1);
+  saveLicenseList(list);
+  renderLicenseList();
+}
+
+function clearLicenseList() {
+  if (!confirm('Alle gespeicherten Lizenzen wirklich löschen?')) return;
+  if (!confirm('Sicher? Ohne Sicherung sind Namen und E-Mails der Pro-User danach verloren.\nVorher „Als .json sichern"?\n\nOK = trotzdem löschen')) return;
+  if (srv.connected) {
+    serverCall('clear', { confirm: 'ALLE LÖSCHEN' }).then(() => renderLicenseList()).catch(serverError);
+    return;
+  }
+  saveLicenseList([]);
+  renderLicenseList();
+}
+
+function exportLicenseListCsv() {
+  const list = loadLicenseList();
+  if (list.length === 0) { alert('Keine Lizenzen vorhanden.'); return; }
+  const header = 'Vorname,Nachname,E-Mail,Lizenzcode,Datum';
+  const rows = list.map(l =>
+    [`"${l.firstName}"`, `"${l.lastName}"`, `"${l.email}"`, l.code, l.date].join(',')
+  );
+  const csv  = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sgm-lizenzen-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function generateLicenseCode() {
+  const secret    = getLicSecret();
+  const firstName = document.getElementById('licFirstName').value.trim();
+  const lastName  = document.getElementById('licLastName').value.trim();
+  const email     = document.getElementById('licEmail').value.trim();
+  const date      = document.getElementById('licDate').value || new Date().toISOString().slice(0,10);
+  const seed      = Math.max(1, parseInt(document.getElementById('licSeed').value) || 1);
+  const name      = [firstName, lastName].filter(Boolean).join(' ');
+
+  if (!email && !firstName && !lastName && !confirm('Ohne Name und E-Mail erzeugen?')) return;
+
+  let code, finalSeed = seed;
+  if (srv.connected) {
+    // Server vergibt Seed + Code → auf allen Geräten eindeutig
+    const btn = document.getElementById('licGenerateBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '… wird auf dem Server erzeugt'; }
+    try {
+      const res = await serverCall('add', { firstName, lastName, email, date, seed, device: deviceLabel() });
+      code = res.entry.code; finalSeed = res.entry.seed;
+      if (res.seedChanged && seed !== finalSeed) showToastCg(`Seed ${seed} war schon vergeben – #${finalSeed} verwendet`);
+    } catch (e) { serverError(e); return; }
+    finally { if (btn) { btn.disabled = false; btn.textContent = '▶ Lizenzcode generieren'; } }
+    addLicenseOutputRow({ seed: finalSeed, code, name, email, date });
+    generatedLicenses.push({ seed: finalSeed, code, name, firstName, lastName, email, date });
+    clearLicenseForm();
+    renderLicenseList();
+    return;
+  }
+
+  if (!secret) { alert('Bitte zuerst mit dem Server verbinden oder das LICENSE_SECRET eintragen.'); return; }
+  code = await generateLicCode(seed, secret);
+
+  // Duplikatschutz: gleicher Seed = gleicher Code → nie zweimal vergeben
+  const list = loadLicenseList();
+  const existing = list.find((l) => l.code === code);
+  if (existing) {
+    alert(`Seed ${seed} wurde bereits vergeben (an ${[existing.firstName, existing.lastName].filter(Boolean).join(' ') || existing.email || '—'}).\nDer nächste freie Seed wird eingetragen — bitte erneut klicken.`);
+    updateNextLicenseSeed();
+    return;
+  }
+
+  // Session-Liste (für "kopieren / download" dieser Sitzung)
+  generatedLicenses.push({ seed, code, name, firstName, lastName, email, date });
+
+  // Persistente Liste speichern
+  list.push({ firstName, lastName, email, code, date, seed, createdAt: new Date().toISOString() });
+  if (!saveLicenseList(list)) return;
+
+  addLicenseOutputRow({ seed, code, name, email, date });
+  document.getElementById('licSeed').value = seed + 1;
+  clearLicenseForm();
+  renderLicenseList();
+}
+
+function addLicenseOutputRow({ seed, code, name, email, date }) {
+  const output = document.getElementById('licenseOutput');
+  if (output.querySelector('.empty-hint')) output.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'code-row';
+  row.innerHTML = `
+    <span class="code-num">#${seed}</span>
+    <span class="code-value pro">${code}</span>
+    <span class="code-meta">${name ? `<strong>${escHtml(name)}</strong><br>` : ''}${escHtml(email)}${date ? `<br>${escHtml(date)}` : ''}</span>
+    <span class="code-actions">
+      <button class="copy-btn" onclick="copyOne(this, '${code}')">copy</button>
+      ${email ? `<a class="copy-btn" href="${licenseMailto({ code, name, email })}">mail</a>` : ''}
+    </span>`;
+  output.prepend(row);
+  document.getElementById('licToolbar').style.display = 'flex';
+  row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function clearLicenseForm() {
+  ['licFirstName', 'licLastName', 'licEmail'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('licDate').value = new Date().toISOString().slice(0, 10);
+  updateNextLicenseSeed();
+}
+
+/** Fertige E-Mail an den Kunden mit Lizenzcode (öffnet das Mailprogramm, auch auf dem Handy) */
+function licenseMailto({ code, name, email }) {
+  const first = (name || '').split(' ')[0];
+  const subject = 'Deine Studio Gear Manager Pro-Lizenz';
+  const body = `Hallo${first ? ' ' + first : ''},\n\nvielen Dank für deinen Kauf von Studio Gear Manager Pro!\n\nDein Lizenzcode:\n${code}\n\nSo aktivierst du Pro: In der App auf ⚙ Setup → Lizenz, Code eintragen und „Aktivieren" klicken. Alle Pro-Funktionen sind dann sofort freigeschaltet, deine Daten bleiben unverändert.\n\nViel Spaß!\nHOLODECK`;
+  return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+async function copyAllLicenses() {
+  const text = generatedLicenses.map(l =>
+    `#${l.seed}\t${l.code}\t${l.name}\t${l.email}\t${l.date}`
+  ).join('\n');
+  await navigator.clipboard.writeText(text).catch(() => {});
+}
+
+function downloadLicenseCsv() {
+  const header = 'Seed,Code,Name,Email,Kaufdatum';
+  const rows = generatedLicenses.map(l =>
+    [l.seed, l.code, `"${l.name}"`, `"${l.email}"`, l.date].join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sgm-lizenzen.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function validateLicenseInput() {
+  const input = document.getElementById('licValidateInput');
+  const code = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const result = document.getElementById('licValidateResult');
+  if (!code) { result.textContent = ''; result.className = 'validate-result'; return; }
+  if (!code.startsWith('SGMP') || code.length !== 16) {
+    result.textContent = '✗ Ungültiges Format (erwartet: SGMP-XXXX-XXXX-XXXX)';
+    result.className = 'validate-result err'; return;
+  }
+  const secret = getLicSecret();
+  if (!secret) { result.textContent = '✗ Kein Secret – bitte mit dem Server verbinden oder LICENSE_SECRET eintragen'; result.className = 'validate-result err'; return; }
+  const base = code.slice(4, 12), check = code.slice(12);
+  const hash = await sha256hex(secret + base);
+  const valid = hash.slice(0, 4).toUpperCase() === check;
+  result.textContent = valid ? '✓ Gültiger Pro-Lizenzcode' : '✗ Ungültiger Code — falsches Secret oder Tippfehler';
+  result.className = 'validate-result ' + (valid ? 'ok' : 'err');
+}
+
+// Heutiges Datum als Default
+document.getElementById('licDate').value = new Date().toISOString().slice(0,10);
+
+// ══════════════════════════════════════
+// FEATURE MANAGER
+// ══════════════════════════════════════
+const FEATURES_STORAGE_KEY = 'sgm-codegen-features-v1';
+
+// Master-Featureliste — wird aus localStorage hydratiert
+let features = loadFeatures();
+
+function defaultFeatures() {
+  return [
+    { key: 'gridColumns',    label: 'Karten pro Zeile',       desc: 'Anzahl Grid-Spalten (2–5) frei wählbar', pro: true },
+    { key: 'multipleImages', label: 'Mehrere Gerätebilder',   desc: 'Bildergalerie mit Vor/Zurück-Navigation', pro: true },
+  ];
+}
+
+function loadFeatures() {
+  try {
+    const raw = localStorage.getItem(FEATURES_STORAGE_KEY);
+    if (!raw) return defaultFeatures();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : defaultFeatures();
+  } catch(_) { return defaultFeatures(); }
+}
+
+function saveFeatures() {
+  try { localStorage.setItem(FEATURES_STORAGE_KEY, JSON.stringify(features)); } catch(_) {}
+}
+
+function renderFeatureTable() {
+  const tbody = document.getElementById('featureTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  features.forEach((feat, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <span class="feat-label">${escHtml(feat.label)}</span>
+        <span class="feat-key">${escHtml(feat.key)}</span>
+        <span class="feat-desc">${escHtml(feat.desc)}</span>
+      </td>
+      <td>
+        <div class="tier-toggle">
+          <button class="tier-btn ${!feat.pro ? 'active-free' : ''}"
+            onclick="setTier(${idx}, false)">Alle</button>
+          <button class="tier-btn ${feat.pro  ? 'active-pro'  : ''}"
+            onclick="setTier(${idx}, true)">Nur Pro</button>
+        </div>
+      </td>
+      <td>
+        <div class="tier-toggle">
+          <button class="tier-btn ${feat.pro  ? 'active-pro'  : ''}"
+            onclick="setTier(${idx}, true)">✓ Nur Pro</button>
+        </div>
+      </td>
+      <td>
+        <button class="copy-btn" style="color:var(--err);border-color:var(--err)"
+          onclick="removeFeature(${idx})" title="Entfernen">✕</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  generateSnippet();
+}
+
+function setTier(idx, isPro) {
+  features[idx].pro = isPro;
+  saveFeatures();
+  renderFeatureTable();
+}
+
+function removeFeature(idx) {
+  features.splice(idx, 1);
+  saveFeatures();
+  renderFeatureTable();
+}
+
+function addFeature() {
+  const key   = document.getElementById('newFeatKey').value.trim().replace(/\s+/g,'');
+  const label = document.getElementById('newFeatLabel').value.trim();
+  const desc  = document.getElementById('newFeatDesc').value.trim();
+
+  if (!key) { alert('Key darf nicht leer sein.'); return; }
+  if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(key)) { alert('Key muss camelCase sein (nur Buchstaben/Ziffern, kein Leerzeichen).'); return; }
+  if (features.some(f => f.key === key)) { alert(`Key "${key}" existiert bereits.`); return; }
+
+  features.push({ key, label: label || key, desc: desc || '', pro: true });
+  saveFeatures();
+  renderFeatureTable();
+
+  document.getElementById('newFeatKey').value   = '';
+  document.getElementById('newFeatLabel').value = '';
+  document.getElementById('newFeatDesc').value  = '';
+}
+
+function generateSnippet() {
+  const lines = features.map(f =>
+    `  ${f.key.padEnd(18)}: { pro: ${f.pro},  label: "${escJs(f.label)}", desc: "${escJs(f.desc)}" },`
+  );
+  const snippet =
+`// ── Pro-Feature Registry ──\n` +
+`// Generiert: ${new Date().toLocaleString('de-DE')}\n` +
+`// Free-Features: ${features.filter(f=>!f.pro).length} | Pro-Features: ${features.filter(f=>f.pro).length}\n\n` +
+`const PRO_FEATURES = {\n${lines.join('\n')}\n};`;
+  document.getElementById('featSnippet').textContent = snippet;
+}
+
+function escJs(str) {
+  return String(str || '').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+}
+
+async function copySnippet() {
+  const text = document.getElementById('featSnippet').textContent;
+  await navigator.clipboard.writeText(text).catch(() => {});
+  const btn = event.target;
+  btn.textContent = '✓ Kopiert';
+  setTimeout(() => btn.textContent = 'Kopieren', 1800);
+}
+
+function downloadSnippet() {
+  const text = document.getElementById('featSnippet').textContent;
+  const blob = new Blob([text], { type: 'text/javascript' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sgm-pro-features.js';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Tab-Switch
+function switchTab(name) {
+  const names = ['donor','license','features','version','users','limits'];
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'features') renderFeatureTable();
+  if (name === 'license')  { renderLicenseList(); serverRefresh(false); }
+}
+
+// ══════════════════════════════════════
+// BENUTZER-STATISTIK
+// ══════════════════════════════════════
+const COUNTER_URL_KEY = 'sgm-codegen-counter-url-v1';
+
+(function restoreCounterUrl() {
+  const saved = localStorage.getItem(COUNTER_URL_KEY);
+  if (saved) document.getElementById('counterUrl').value = saved;
+})();
+
+async function fetchUserStats() {
+  const urlInput = document.getElementById('counterUrl');
+  const url = urlInput.value.trim();
+  const errEl = document.getElementById('userStatsError');
+  const box   = document.getElementById('userStatsBox');
+
+  errEl.textContent = '';
+  errEl.className   = 'validate-result';
+
+  if (!url) {
+    errEl.textContent = '✗ Bitte URL zu counter.php eingeben.';
+    errEl.className   = 'validate-result err';
+    return;
+  }
+
+  localStorage.setItem(COUNTER_URL_KEY, url);
+
+  try {
+    // Dummy-UUID damit counter.php antwortet ohne neuen Eintrag zu zählen
+    const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'readonly=1';
+    const res  = await fetch(fetchUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    const total = typeof data.unique === 'number' ? data.unique : '—';
+    const free  = typeof data.free   === 'number' ? data.free   : '—';
+    const pro   = typeof data.pro    === 'number' ? data.pro    : '—';
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statFree').textContent  = free;
+    document.getElementById('statPro').textContent   = pro;
+    document.getElementById('statMeta').textContent  =
+      `Abgerufen: ${new Date().toLocaleString('de-DE')}`;
+
+    box.style.display = '';
+  } catch (e) {
+    errEl.textContent = '✗ Fehler beim Abrufen: ' + e.message;
+    errEl.className   = 'validate-result err';
+  }
+}
+
+// ══════════════════════════════════════
+// LIMITS
+// ══════════════════════════════════════
+const LIMITS_STORAGE_KEY = 'sgm-codegen-limits-v1';
+
+(function restoreLimitsData() {
+  const saved = localStorage.getItem(LIMITS_STORAGE_KEY);
+  if (!saved) return;
+  try {
+    const d = JSON.parse(saved);
+    if (d.deviceLimit !== undefined) document.getElementById('limitsDeviceLimit').value = d.deviceLimit;
+    if (d.nagMin      !== undefined) document.getElementById('limitsNagMin').value       = d.nagMin;
+    if (d.nagMax      !== undefined) document.getElementById('limitsNagMax').value       = d.nagMax;
+  } catch (e) {}
+})();
+
+function saveLimitsData() {
+  localStorage.setItem(LIMITS_STORAGE_KEY, JSON.stringify({
+    deviceLimit: document.getElementById('limitsDeviceLimit').value,
+    nagMin:      document.getElementById('limitsNagMin').value,
+    nagMax:      document.getElementById('limitsNagMax').value,
+  }));
+}
+
+function setLimitsWriteResult(type, msg) {
+  const el = document.getElementById('limitsWriteResult');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'write-result' + (type ? ' ' + type : '');
+}
+
+async function writeLimitsToAppJs() {
+  if (!appJsFileHandle) {
+    alert('Bitte zuerst app.js auswählen (📂 app.js auswählen).');
+    return;
+  }
+  const limitVal = parseInt(document.getElementById('limitsDeviceLimit').value, 10);
+  const nagMin   = parseInt(document.getElementById('limitsNagMin').value, 10);
+  const nagMax   = parseInt(document.getElementById('limitsNagMax').value, 10);
+
+  if (isNaN(limitVal) || limitVal < 0) {
+    setLimitsWriteResult('err', '✗ Ungültiger Geräte-Limit — bitte eine Zahl ≥ 0 eingeben.');
+    return;
+  }
+  if (isNaN(nagMin) || nagMin < 1 || isNaN(nagMax) || nagMax < 1 || nagMin > nagMax) {
+    setLimitsWriteResult('err', '✗ Ungültige Nag-Zeiten — Min ≥ 1 und Min ≤ Max.');
+    return;
+  }
+
+  try {
+    const file    = await appJsFileHandle.getFile();
+    let content   = await file.text();
+
+    const regexDevice = /^(const FREE_DEVICE_LIMIT\s*=\s*)\d+(\s*;.*)?$/m;
+    const regexMin    = /^(const NAG_MIN_DELAY_MS\s*=\s*)\d+(\s*\*\s*60\s*\*\s*1000\s*;.*)?$/m;
+    const regexMax    = /^(const NAG_MAX_DELAY_MS\s*=\s*)\d+(\s*\*\s*60\s*\*\s*1000\s*;.*)?$/m;
+
+    if (!regexDevice.test(content)) { setLimitsWriteResult('err', '✗ FREE_DEVICE_LIMIT nicht in app.js gefunden.'); return; }
+    if (!regexMin.test(content))    { setLimitsWriteResult('err', '✗ NAG_MIN_DELAY_MS nicht in app.js gefunden.');  return; }
+    if (!regexMax.test(content))    { setLimitsWriteResult('err', '✗ NAG_MAX_DELAY_MS nicht in app.js gefunden.');  return; }
+
+    content = content.replace(regexDevice, `const FREE_DEVICE_LIMIT = ${limitVal}; // Free-Version: max. Geräte (0 = unbegrenzt)`);
+    content = content.replace(regexMin,    `const NAG_MIN_DELAY_MS = ${nagMin} * 60 * 1000;`);
+    content = content.replace(regexMax,    `const NAG_MAX_DELAY_MS = ${nagMax} * 60 * 1000;`);
+
+    const writable = await appJsFileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    setLimitsWriteResult('ok', `✓ Gespeichert — Gerätelimit: ${limitVal}, Nag: ${nagMin}–${nagMax} min`);
+  } catch (e) {
+    if (e.name === 'NotAllowedError') {
+      appJsFileHandle = null;
+      updateAppJsDisplays(null);
+      setLimitsWriteResult('err', '✗ Schreibzugriff verweigert — bitte Datei erneut auswählen.');
+    } else {
+      setLimitsWriteResult('err', '✗ Fehler: ' + e.message);
+    }
+  }
+}
+
+// ══════════════════════════════════════
+// VERSION / WHAT'S NEW
+// ══════════════════════════════════════
+const VERSION_STORAGE_KEY = 'sgm-codegen-version-v1';
+
+function saveVersionData() {
+  try {
+    localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify({
+      version: document.getElementById('versionNumber').value.trim(),
+      deF:     document.getElementById('verNotesDeF').value,
+      dePro:   document.getElementById('verNotesDePro').value,
+      enF:     document.getElementById('verNotesEnF').value,
+      enPro:   document.getElementById('verNotesEnPro').value,
+    }));
+  } catch(_) {}
+}
+
+function restoreVersionData() {
+  try {
+    const raw = localStorage.getItem(VERSION_STORAGE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (!d) return;
+    document.getElementById('versionNumber').value  = d.version || '';
+    document.getElementById('verNotesDeF').value    = d.deF    || '';
+    document.getElementById('verNotesDePro').value  = d.dePro  || '';
+    document.getElementById('verNotesEnF').value    = d.enF    || '';
+    document.getElementById('verNotesEnPro').value  = d.enPro  || '';
+  } catch(_) {}
+}
+
+function generateVersionSnippet() {
+  const version = document.getElementById('versionNumber').value.trim();
+  if (!version) { alert('Bitte Versionsnummer eingeben.'); return; }
+
+  saveVersionData();
+
+  const deF   = document.getElementById('verNotesDeF').value.trim();
+  const dePro = document.getElementById('verNotesDePro').value.trim();
+  const enF   = document.getElementById('verNotesEnF').value.trim();
+  const enPro = document.getElementById('verNotesEnPro').value.trim();
+
+  // Backtick-Strings escapen
+  const esc = s => s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+
+  const snippet =
+`// ── What's New ──
+// Generiert: ${new Date().toLocaleString('de-DE')}
+// Version: ${escJs(version)}
+const WHATS_NEW = {
+  version: "${escJs(version)}",
+  notes: {
+    de: {
+      free: \`${esc(deF)}\`,
+      pro:  \`${esc(dePro)}\`,
+    },
+    en: {
+      free: \`${esc(enF)}\`,
+      pro:  \`${esc(enPro)}\`,
+    },
+  },
+};
+
+const WHATS_NEW_KEY = "studioGearManager.whatsNewSeen.v1";
+
+function showWhatsNewIfNeeded() {
+  if (!WHATS_NEW.notes) return;
+  // Bereits gesehen → überspringen
+  if (localStorage.getItem(WHATS_NEW_KEY) === WHATS_NEW.version) return;
+  // Erster App-Start (kein Setup durchgeführt) → nicht anzeigen,
+  // damit der Willkommen-Dialog nicht überlagert wird.
+  // Donor-Codes und Lizenz-Codes bleiben dabei vollständig erhalten —
+  // sie liegen unabhängig im localStorage und werden hier nicht verändert.
+  if (localStorage.getItem(SETUP_KEY) !== "true") {
+    localStorage.setItem(WHATS_NEW_KEY, WHATS_NEW.version);
+    return;
+  }
+  const lang = (localStorage.getItem(LANG_KEY) || "de") === "en" ? "en" : "de";
+  const notes = WHATS_NEW.notes[lang];
+  let body = notes.free || "";
+  if (isProUser() && notes.pro) body += (body ? "\\n\\n" : "") + notes.pro;
+  if (!body) { localStorage.setItem(WHATS_NEW_KEY, WHATS_NEW.version); return; }
+  _showWhatsNewDialog(WHATS_NEW.version, body, lang);
+}
+
+function _showWhatsNewDialog(version, body, lang) {
+  const isPremium = !!localStorage.getItem(DONOR_CODE_KEY);
+  const title    = lang === "en" ? \`What's New in v\${version}\` : \`Neu in Version \${version}\`;
+  const btnLabel = lang === "en" ? "Got it" : "Verstanden";
+  const premiumBadge = isPremium
+    ? \`<span style="display:inline-block;background:#67e8f9;color:#06111f;font-size:10px;
+                   font-weight:800;padding:2px 8px;border-radius:4px;letter-spacing:.05em;
+                   margin-left:8px;vertical-align:middle">PREMIUM</span>\`
+    : "";
+  const dlg = document.createElement("dialog");
+  dlg.className = "dialog";
+  dlg.style.cssText = "max-width:500px;padding:32px;";
+  dlg.innerHTML = \`
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+                  color:rgba(207,250,254,.6);margin-bottom:6px">
+        Studio Gear Manager v\${_escHtml(version)}\${premiumBadge}
+      </div>
+      <h3 style="margin:0;font-size:22px;letter-spacing:-.03em">\${_escHtml(title)}</h3>
+    </div>
+    <div style="white-space:pre-wrap;line-height:1.75;color:#cbd5e1;font-size:14px;
+                margin-bottom:24px;max-height:60vh;overflow-y:auto">
+      \${_escHtml(body)}
+    </div>
+    <button class="btn btn-primary" style="width:100%"
+      onclick="this.closest('dialog').close()">\${_escHtml(btnLabel)}</button>
+  \`;
+  document.body.appendChild(dlg);
+  dlg.addEventListener("close", () => {
+    localStorage.setItem(WHATS_NEW_KEY, WHATS_NEW.version);
+    dlg.remove();
+  });
+  dlg.showModal();
+}
+
+function _escHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}`;
+
+  document.getElementById('versionSnippet').textContent = snippet;
+}
+
+async function copyVersionSnippet() {
+  const text = document.getElementById('versionSnippet').textContent;
+  if (text.startsWith('—')) return;
+  await navigator.clipboard.writeText(text).catch(() => {});
+  const btn = event.target;
+  btn.textContent = '✓ Kopiert';
+  setTimeout(() => btn.textContent = 'Snippet kopieren', 1800);
+}
+
+// ── File System Access API ──
+let appJsFileHandle = null;
+
+function updateAppJsDisplays(name) {
+  ['appJsFileName', 'featAppJsFileName', 'limitsAppJsFileName'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (name) {
+      el.textContent = name;
+      el.classList.remove('empty');
+    } else {
+      el.textContent = 'Noch keine Datei ausgewählt';
+      el.classList.add('empty');
+    }
+  });
+}
+
+async function pickAppJs() {
+  if (!('showOpenFilePicker' in window)) {
+    alert('Dein Browser unterstützt die File System Access API nicht.\nBitte Chrome oder Edge verwenden.');
+    return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'JavaScript', accept: { 'text/javascript': ['.js'] } }],
+      multiple: false,
+    });
+    appJsFileHandle = handle;
+    updateAppJsDisplays(handle.name);
+    setWriteResult('', '');
+    setFeatWriteResult('', '');
+  } catch (e) {
+    if (e.name !== 'AbortError') setWriteResult('err', '✗ Datei konnte nicht geöffnet werden: ' + e.message);
+  }
+}
+
+function setFeatWriteResult(type, msg) {
+  const el = document.getElementById('featWriteResult');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'write-result' + (type ? ' ' + type : '');
+}
+
+async function generateAndWriteFeatures() {
+  if (!appJsFileHandle) {
+    alert('Bitte zuerst app.js auswählen (📂 app.js auswählen).');
+    return;
+  }
+
+  generateSnippet();
+  const snippet = document.getElementById('featSnippet').textContent;
+
+  try {
+    const file = await appJsFileHandle.getFile();
+    let content = await file.text();
+
+    // PRO_FEATURES-Block ersetzen (mit Kommentar-Header) oder einfügen
+    const blockPattern = /\/\/ ── Pro-Feature Registry ──[\s\S]*?\nconst PRO_FEATURES = \{[\s\S]*?\n\};/;
+    if (blockPattern.test(content)) {
+      content = content.replace(blockPattern, snippet);
+    } else {
+      // Nur die Konstante selbst suchen und ersetzen
+      const constPattern = /const PRO_FEATURES = \{[\s\S]*?\n\};/;
+      if (constPattern.test(content)) {
+        content = content.replace(constPattern, snippet);
+      } else {
+        // Neu einfügen nach APP_VERSION
+        const appVerPattern = /(const APP_VERSION\s*=\s*"[^"]*";)/;
+        if (appVerPattern.test(content)) {
+          content = content.replace(appVerPattern, `$1\n\n${snippet}`);
+        } else {
+          content = snippet + '\n\n' + content;
+        }
+      }
+    }
+
+    const writable = await appJsFileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+
+    setFeatWriteResult('ok', `✓ app.js erfolgreich aktualisiert — PRO_FEATURES geschrieben`);
+  } catch (e) {
+    if (e.name === 'NotAllowedError') {
+      setFeatWriteResult('err', '✗ Schreibzugriff verweigert — bitte Datei erneut auswählen.');
+      appJsFileHandle = null;
+      updateAppJsDisplays(null);
+    } else {
+      setFeatWriteResult('err', '✗ Fehler: ' + e.message);
+    }
+  }
+}
+
+async function generateAndWrite() {
+  const version = document.getElementById('versionNumber').value.trim();
+  if (!version) { alert('Bitte Versionsnummer eingeben.'); return; }
+  if (!appJsFileHandle) { alert('Bitte zuerst app.js auswählen (📂 app.js auswählen).'); return; }
+
+  // Snippet erzeugen (Preview aktualisieren)
+  generateVersionSnippet();
+  const snippet = document.getElementById('versionSnippet').textContent;
+
+  try {
+    // Datei lesen
+    const file = await appJsFileHandle.getFile();
+    let content = await file.text();
+
+    // 1. WHATS_NEW-Block + Funktionen ersetzen oder einfügen
+    const blockPattern = /\/\/ ── What's New ──[\s\S]*?function _escHtml\(str\) \{[\s\S]*?\n\}/;
+    if (blockPattern.test(content)) {
+      content = content.replace(blockPattern, snippet);
+    } else {
+      // Nach APP_VERSION-Zeile einfügen
+      const appVerPattern = /(const APP_VERSION\s*=\s*"[^"]*";)/;
+      if (appVerPattern.test(content)) {
+        content = content.replace(appVerPattern, `$1\n\n${snippet}`);
+      } else {
+        // Fallback: ans Ende des Konstantenblocks (erste leere Zeile nach Konstanten)
+        content = snippet + '\n\n' + content;
+      }
+    }
+
+    // 2. Boot-Schritt eintragen, falls noch nicht vorhanden
+    if (!content.includes('safeBootStep("showWhatsNewIfNeeded"')) {
+      content = content.replace(
+        /(safeBootStep\("maybeShowStartup"[^\n]+\n)/,
+        `$1  safeBootStep("showWhatsNewIfNeeded", showWhatsNewIfNeeded);\n`
+      );
+    }
+
+    // 3. Zurückschreiben
+    const writable = await appJsFileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+
+    setWriteResult('ok', `✓ app.js erfolgreich aktualisiert — Version ${version} eingetragen`);
+  } catch (e) {
+    if (e.name === 'NotAllowedError') {
+      setWriteResult('err', '✗ Schreibzugriff verweigert — bitte Datei erneut auswählen.');
+      appJsFileHandle = null;
+      updateAppJsDisplays(null);
+    } else {
+      setWriteResult('err', '✗ Fehler: ' + e.message);
+    }
+  }
+}
+
+function setWriteResult(type, msg) {
+  const el = document.getElementById('writeResult');
+  el.textContent = msg;
+  el.className = 'write-result' + (type ? ' ' + type : '');
+}
+
+// Init
+renderFeatureTable();
+restoreVersionData();
+// ══════════════════════════════════════
+// SERVER-SPEICHER (licenses.php)
+// ══════════════════════════════════════
+const SRV_KEY = 'sgm-codegen-server-v1';      // { url, pass? }
+const SECRETS_KEY = 'sgm-codegen-secrets-v1'; // { license, donor }
+const srv = { connected: false, url: '', pass: '', lastSync: null };
+
+function deviceLabel() {
+  const ua = navigator.userAgent;
+  if (/iPhone/.test(ua)) return 'iPhone';
+  if (/iPad|Macintosh.*Mobile/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'iPad';
+  if (/Android/.test(ua)) return /Mobile/.test(ua) ? 'Android-Handy' : 'Android-Tablet';
+  if (/Macintosh/.test(ua)) return 'Mac';
+  if (/Windows/.test(ua)) return 'Windows';
+  return 'Browser';
+}
+
+function storeSecrets() {
+  try {
+    localStorage.setItem(SECRETS_KEY, JSON.stringify({
+      license: document.getElementById('licSecretInput').value.trim(),
+      donor: document.getElementById('secretInput').value.trim(),
+    }));
+  } catch (_) {}
+}
+function restoreSecrets() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SECRETS_KEY) || '{}');
+    if (s.license) document.getElementById('licSecretInput').value = s.license;
+    if (s.donor) document.getElementById('secretInput').value = s.donor;
+  } catch (_) {}
+}
+
+function showToastCg(msg) {
+  let el = document.getElementById('cgToast');
+  if (!el) { el = document.createElement('div'); el.id = 'cgToast'; el.className = 'cg-toast'; document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(showToastCg._t); showToastCg._t = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+const SRV_ERRORS = {
+  auth: 'Falsches Passwort',
+  locked: 'Zu viele Fehlversuche – bitte 15 Minuten warten',
+  not_configured: 'In licenses.php ist noch kein Passwort eingetragen ($ADMIN_PASSWORD, mind. 10 Zeichen)',
+  not_writable: 'Der Server darf im Ordner nicht schreiben (Schreibrechte für licenses.php-Ordner prüfen)',
+  store: 'Speichern auf dem Server fehlgeschlagen',
+  not_found: 'Eintrag nicht gefunden (wurde er auf einem anderen Gerät gelöscht?)',
+  network: 'Server nicht erreichbar (Internet, Adresse oder PHP prüfen)',
+};
+function serverError(e) {
+  const msg = SRV_ERRORS[e?.code] || e?.message || String(e);
+  setServerStatus('err', '✗ ' + msg);
+  if (e?.code === 'auth') { srv.connected = false; renderServerUi(); }
+  alert('Server: ' + msg);
+}
+
+async function serverCall(action, payload = {}) {
+  let res, data;
+  try {
+    res = await fetch(srv.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-SGM-Auth': srv.pass },
+      body: JSON.stringify({ action, ...payload }),
+      cache: 'no-store',
+    });
+  } catch (_) { const err = new Error('network'); err.code = 'network'; throw err; }
+  try { data = await res.json(); } catch (_) {
+    const err = new Error(res.status === 404 ? 'licenses.php nicht gefunden (Adresse prüfen)' : 'Antwort ist kein JSON – läuft PHP auf dem Server?');
+    err.code = 'badresponse'; throw err;
+  }
+  if (!res.ok || !data.ok) { const err = new Error(data.error || 'HTTP ' + res.status); err.code = data.error; throw err; }
+  if (Array.isArray(data.licenses)) {
+    try { localStorage.setItem(LIC_LIST_KEY, JSON.stringify(data.licenses)); } catch (_) {}
+    srv.lastSync = new Date();
+  }
+  if (data.licenseSecret) document.getElementById('licSecretInput').value = data.licenseSecret;
+  if (data.donorSecret) document.getElementById('secretInput').value = data.donorSecret;
+  if (data.licenseSecret || data.donorSecret) storeSecrets();
+  if (data.nextSeed) { const inp = document.getElementById('licSeed'); if (inp) inp.value = data.nextSeed; }
+  renderServerUi();
+  return data;
+}
+
+function setServerStatus(cls, text) {
+  const el = document.getElementById('srvStatus');
+  if (el) { el.textContent = text; el.className = 'lic-backup-status ' + (cls || ''); }
+}
+
+function renderServerUi() {
+  document.getElementById('srvForm').style.display = srv.connected ? 'none' : '';
+  document.getElementById('srvActions').style.display = srv.connected ? '' : 'none';
+  document.getElementById('srvBox').classList.toggle('connected', srv.connected);
+  document.body.classList.toggle('server-mode', srv.connected);
+  if (srv.connected) {
+    const n = loadLicenseList().length;
+    const t = srv.lastSync ? srv.lastSync.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : '';
+    setServerStatus('ok', `✓ Verbunden · ${n} Lizenzen · ${t}`);
+  }
+}
+
+function defaultServerUrl() {
+  return /^https?:/.test(location.protocol) ? new URL('licenses.php', location.href).href : '';
+}
+
+async function serverConnect() {
+  const url = document.getElementById('srvUrl').value.trim();
+  const pass = document.getElementById('srvPass').value;
+  if (!/^https?:\/\//i.test(url)) { alert('Bitte die Adresse von licenses.php eintragen (https://…)'); return; }
+  if (!pass) { alert('Bitte das Passwort eintragen.'); return; }
+  const localBefore = loadLicenseList();
+  srv.url = url; srv.pass = pass;
+  setServerStatus('', '… verbinde');
+  try {
+    const data = await serverCall('list');
+    srv.connected = true;
+    try {
+      localStorage.setItem(SRV_KEY, JSON.stringify(document.getElementById('srvRemember').checked ? { url, pass } : { url }));
+    } catch (_) {}
+    // Lizenzen, die bisher nur in diesem Browser lagen, auf den Server übernehmen
+    const onServer = new Set(data.licenses.map((l) => l.code));
+    const localOnly = localBefore.filter((l) => l.code && !onServer.has(l.code));
+    if (localOnly.length && confirm(`${localOnly.length} Lizenz(en) liegen bisher nur in diesem Browser.\nJetzt auf den Server übertragen?`)) {
+      const res = await serverCall('merge', { licenses: localOnly });
+      showToastCg(`${res.added} Lizenzen auf den Server übertragen`);
+    } else if (localOnly.length) {
+      // nicht übertragen → lokal als Datei sichern, damit nichts verloren geht
+      const blob = new Blob([JSON.stringify({ type: 'sgm-licenses', version: 1, exportedAt: new Date().toISOString(), licenses: localBefore }, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `sgm-lizenzen-lokal-${new Date().toISOString().slice(0,10)}.json`; a.click();
+      showToastCg('Lokale Liste als Datei gesichert');
+    }
+    renderServerUi(); renderLicenseList(); renderLicenseBackupStatus();
+  } catch (e) {
+    srv.connected = false;
+    // Liste nicht durch einen fehlgeschlagenen Login verlieren
+    try { localStorage.setItem(LIC_LIST_KEY, JSON.stringify(localBefore)); } catch (_) {}
+    serverError(e);
+    renderServerUi();
+  }
+}
+
+async function serverRefresh(manual) {
+  if (!srv.connected) return;
+  try { await serverCall('list'); renderLicenseList(); if (manual) showToastCg('Liste aktualisiert'); }
+  catch (e) { if (manual || e.code === 'auth') serverError(e); else setServerStatus('warn', '⚠ Offline – zeige zuletzt geladene Liste'); }
+}
+
+function serverDisconnect() {
+  srv.connected = false; srv.pass = '';
+  try { const s = JSON.parse(localStorage.getItem(SRV_KEY) || '{}'); localStorage.setItem(SRV_KEY, JSON.stringify({ url: s.url || srv.url })); } catch (_) {}
+  document.getElementById('srvPass').value = '';
+  document.getElementById('srvBackups').style.display = 'none';
+  setServerStatus('', 'nicht verbunden');
+  renderServerUi();
+  renderLicenseBackupStatus();
+}
+
+async function serverShowBackups() {
+  const box = document.getElementById('srvBackups');
+  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+  try {
+    const res = await fetch(srv.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SGM-Auth': srv.pass }, body: JSON.stringify({ action: 'backups' }) }).then((r) => r.json());
+    if (!res.ok) throw Object.assign(new Error(res.error), { code: res.error });
+    const fmt = (n) => { const m = n.match(/(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})/); return m ? `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}` : n; };
+    box.innerHTML = res.backups.length
+      ? '<div class="field-label">Automatische Sicherungen (vor jeder Änderung)</div>' + res.backups.map((b) => `<div class="srv-backup-row"><span>${fmt(b.name)}</span><button class="copy-btn" onclick="serverRestore('${escHtml(b.name)}')">wiederherstellen</button></div>`).join('')
+      : '<p class="lic-backup-hint">Noch keine Sicherungen – die erste entsteht bei der nächsten Änderung.</p>';
+    box.style.display = '';
+  } catch (e) { serverError(e); }
+}
+
+async function serverRestore(name) {
+  if (!confirm('Diesen Stand wiederherstellen?\nDer aktuelle Stand wird vorher ebenfalls gesichert.')) return;
+  try { await serverCall('restore', { name }); renderLicenseList(); document.getElementById('srvBackups').style.display = 'none'; showToastCg('Stand wiederhergestellt'); }
+  catch (e) { serverError(e); }
+}
+
+async function initServer() {
+  restoreSecrets();
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(SRV_KEY) || '{}'); } catch (_) {}
+  document.getElementById('srvUrl').value = saved.url || defaultServerUrl();
+  if (saved.url && saved.pass) {
+    srv.url = saved.url; srv.pass = saved.pass; srv.connected = true;
+    renderServerUi();
+    setServerStatus('', '… verbinde');
+    try { await serverCall('list'); renderLicenseList(); renderLicenseBackupStatus(); }
+    catch (e) {
+      if (e.code === 'auth' || e.code === 'locked' || e.code === 'not_configured') { serverError(e); serverDisconnect(); }
+      else setServerStatus('warn', '⚠ Offline – zeige zuletzt geladene Liste');
+    }
+  }
+  // Beim Zurückkehren in den Tab/die App: Liste neu laden (Änderungen von anderen Geräten)
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') serverRefresh(false); });
+}
+
+renderLicenseList();
+initLicenseBackup();
+initServer();
+</script>
+</body>
+</html>
