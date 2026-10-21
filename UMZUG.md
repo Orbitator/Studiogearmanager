@@ -1,19 +1,17 @@
 # Umzug in den neuen Claude-Account (Claude Code)
 
-## 1. Projekt auf deinen Rechner
-Den Ordner aus `SGM-Umzug.zip` entpacken, z. B. nach
-`~/Documents/Apps/Stud.IO/StudioGearManager`.
-Der Git-Verlauf (alle Versionen seit 1.0.3) ist im Ordner `.git` enthalten. Auf dem Mac sind
-Ordner mit Punkt versteckt (Cmd+Shift+. zeigt sie an).
+## 1. Projekt liegt auf GitHub
+Repository: https://github.com/Orbitator/Studiogearmanager (Branch `main`).
+Der alte Stand vom April ist im Verlauf erhalten, der aktuelle Stand (1.0.6) liegt obenauf.
 
-## 2. Auf GitHub sichern (empfohlen)
-Claude Code im Web und auf dem Handy arbeitet mit GitHub-Repositories. Lokal geht es auch ohne.
-1. Auf github.com ein neues **privates** Repository anlegen, z. B. `studio-gear-manager` (ohne README).
-2. Im Projektordner im Terminal:
-   ```bash
-   git remote add origin https://github.com/DEIN-NAME/studio-gear-manager.git
-   git push -u origin main
-   ```
+## 2. Auf deinen Rechner holen
+```bash
+cd ~/Documents/Apps/Stud.IO
+git clone https://github.com/Orbitator/Studiogearmanager.git StudioGearManager
+```
+Liegt dort schon ein Ordner `StudioGearManager`, vorher umbenennen.
+
+**Hinweis:** Das Repository ist öffentlich. Empfehlung: auf GitHub unter Settings → General → Danger Zone → „Change visibility“ auf **Private** stellen.
 
 ## 3. Claude Code im neuen Account
 - **Am Rechner:** Terminal im Projektordner öffnen, `claude` starten, mit dem neuen Account anmelden.
