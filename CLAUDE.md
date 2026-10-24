@@ -24,7 +24,7 @@ Aktuelle Version: **1.0.6** (live). Free-Version mit Gerätelimit, Pro per Lizen
 | `artifacts/code-generator/` | Quelltext des Code-Generator-Artefakts (claude.ai, eigener Datenspeicher) |
 | `artifacts/spenden-widget/` | Spendenhinweis als eigenständiges Script (`donate-widget.js`) + Baukasten-Seite |
 | `tests/` | Playwright-Tests (siehe unten) |
-| `docs/` | Changelogs |
+| `docs/` | Changelogs, UX-Review vom 08.10.2026, `TEXTE.md` (Release Notes, Pro-Werbetext, Kunden-Mail DE/EN) |
 
 ## Architektur von app.js (Orientierung)
 - Konstanten ganz oben: `APP_VERSION`, `FREE_DEVICE_LIMIT = 25`, `PRO_SHOP_URL` (leer = Formular), `PRO_PRICE = 19`, `ORDER_EMAIL`, `WHATS_NEW` (Release-Notes DE/EN, Free/Pro).
@@ -38,6 +38,12 @@ Aktuelle Version: **1.0.6** (live). Free-Version mit Gerätelimit, Pro per Lizen
 ## Produktregeln
 - **Free bekommt alle Optimierungen und Fehlerbehebungen; Pro bekommt individuelle Anpassungen** (eigene Felder, Spaltenbreiten, Logo-Position, Kategorien-Reihenfolge, Grid-Spalten, Galerie). Free darf sich nie beschnitten anfühlen.
 - Spendenhinweis (Nag-Toast) wird bei Pro und eingelöstem Spenden-Code unterdrückt.
+
+## Pro-Verkauf (aktueller Ablauf)
+- Preis **19 € einmalig**, inklusive Pro-Updates für 12 Monate (so steht es im Bestellformular).
+- Ablauf: Kunde bestellt in der App (Setup → Lizenz → „Pro-Version kaufen“ oder Limit-Dialog) → `order.php` speichert in `orders/orders.csv` und mailt an HOLODECK → Zahlung manuell anfordern → Lizenz im Code-Generator erzeugen → Code per Mail schicken (Vorlage in `docs/TEXTE.md`).
+- Lizenzliste liegt auf dem Server (`licenses.php`, Passwort) und zusätzlich im Code-Generator-Artefakt auf claude.ai. Beide nutzen denselben Algorithmus; abgleichen per JSON-Export/-Import.
+- Ohne Server/PHP öffnet das Bestellformular das Mailprogramm (Fallback an `ORDER_EMAIL`).
 
 ## Release-Checkliste (bei jeder neuen Version)
 1. `APP_VERSION` und `WHATS_NEW.version` in `app.js` erhöhen, Notes DE + EN (Fehlerbehebung / Optimierung / Neue Funktionen; Pro getrennt).
